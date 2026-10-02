@@ -1,0 +1,22 @@
+[
+  {
+    "provider": "cusp",
+    "source": "https://cuspwealth.com/logo.svg",
+    "file": "public/logos/cusp.svg"
+  },
+  {
+    "provider": "sarwa",
+    "source": "https://www.sarwa.co/images/logo/sarwa_logo.svg",
+    "file": "public/logos/sarwa.svg"
+  },
+  {
+    "provider": "tabadulat",
+    "source": "https://cdn.prod.website-files.com/68ee4b433a986a4456c7c8ba/68ee5bf102f0d225a659808d_Light.svg",
+    "file": "public/logos/tabadulat.svg"
+  },
+  {
+    "provider": "wahed",
+    "source": "https://cdn.prod.website-files.com/692951a60766e54470be6c6e/692951a70766e54470be6e0d_wahed-color-logo.svg",
+    "file": "public/logos/wahed.svg"
+  }
+]

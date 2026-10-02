@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {matchQAPack,answerTag} from '../public/qa.js';
+import {builtin} from '../public/core.js';
+const pack=JSON.parse(await readFile(new URL('../public/qa_pack.json',import.meta.url)));
+const {stocks}=JSON.parse(await readFile(new URL('../public/safar_data.json',import.meta.url)));
+const entry=id=>pack.find(e=>e.id===id);
+test('30 stored entries with unique IDs and supported groups',()=>{assert.equal(pack.length,30);assert.equal(new Set(pack.map(e=>e.id)).size,30);for(const e of pack){assert.ok(e.question&&e.answer);assert.ok(['AAOIFI','General','Personal','Safr'].includes(e.basis));assert.ok(['Purification','Basics','Safr'].includes(e.category));}});
+test('stored matching is case insensitive and leaves text intact',()=>{for(const e of pack){const actual=matchQAPack(e.question.toUpperCase(),pack);assert.equal(actual.answer,e.id==='zakat_amount'?entry('zakat').answer:e.answer);}});
+test('purification retains the supplied clause references and paragraphs',()=>{const answer=matchQAPack('how to purify',pack).answer;assert.equal(answer,entry('purify').answer);for(const clause of ['3/4/6','3/4/6/4','3/4/6/5'])assert.ok(answer.includes(clause));assert.ok(answer.includes('\n\n'));});
+test('topic keywords return the supplied answers before the agent',()=>{for(const [q,id]of [['explain RIBA','riba'],['tell me about sukuk','sukuk'],['what about takaful','takaful'],['zakat basics','zakat'],['how about gold','gold'],['explain ETFs','etf'],['is this a fatwa','fatwa'],['explain AAOIFI','aaoifi']])assert.equal(builtin(q,stocks,pack),entry(id).answer);});
+test('personal zakat and purification queries never compute a user amount',()=>{for(const q of ['Calculate my zakat on AED 12345','How much purification for my 99 shares?','What purification amount do I owe?','Compute zakah on 55000','How much zakat do I give on my investments?']){const answer=matchQAPack(q,pack).answer;assert.match(answer,/qualified scholar/);assert.ok(!answer.includes('12345'));assert.ok(!answer.includes('99'));assert.ok(!answer.includes('55000'));assert.ok(!answer.includes('AED 2,500'));assert.ok(!answer.includes('shortcut'));}});
+test('unrelated stock questions still use the existing screen',()=>{assert.equal(matchQAPack('Is Apple halal?',pack),null);assert.match(builtin('Is Apple halal?',stocks,pack),/income unverified/);assert.equal(matchQAPack('How does this work?',pack),null);});
+test('basis tags preserve three labels and map brand entries to General',()=>{for(const basis of ['AAOIFI','General','Personal'])assert.equal(answerTag(basis),basis);assert.equal(answerTag('Safr'),'General');});

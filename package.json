@@ -1,0 +1,16 @@
+{
+  "name": "safr-demo",
+  "version": "3.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Safr by Falahone \u2014 illustrative newcomer savings demo",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js",
+    "build": "python3 build.py"
+  },
+  "dependencies": {}
+}

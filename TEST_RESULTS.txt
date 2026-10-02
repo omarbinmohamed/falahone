@@ -1,0 +1,55 @@
+Safr final archives update — 2 October 2026
+
+REQUESTED CHANGES
+- More fluid transitions: slower, smaller movements; native screen crossfades where supported; reduced-motion and immediate skip support retained. Rapid navigation cancels stale updates. Unsupported or failed animation APIs cannot block navigation.
+- Removed the “Falahone is building this for you” section and Join the Falahone waitlist form. Other Safr by Falahone branding is retained.
+- Added four locally hosted official provider logos: Cusp Wealth, Sarwa, Tabadulat, Wahed. Source URLs are in LOGO_SOURCES.json. Original colours preserved on contrasting logo surfaces.
+- Asset checks now use plain-language reasoning, without standard names, clause numbers or technical ratio calculations. Screening rules and verdicts remain unchanged internally. The informational/not-a-fatwa line and dated price changes remain.
+- Stored educational Q&A answers remain verbatim, including references where supplied.
+
+PASSED
+- 21 Node tests, no failures: original stock verdicts, goal maths, mix boundaries, Q&A, personal amount safeguards, translated fallback data with no standard labels, mocked agent tools, loader timing, rapid-navigation cancellation, reduced-motion and unavailable-animation fallbacks.
+- 100 DOM interaction checks: 25 at each combination of 1280px/400px window settings and light/dark states. These are event/source checks, not rendered layout tests.
+- Loader/hero/agent flow, About you first, age gate, protection, six goal presets, three sliders, AED 1,433/month example, all eight sidebar steps.
+- All 15 stock screens preserve their verdicts and omit standard names/clause references. Halal-only additions, portfolio caps and horizon changes still work.
+- Check any asset: seven UAE examples, suggestions, ETF labels, sukuk explanation, unknown asset notice, no Add button, demo screening request stores nothing.
+- Four correct alphabetical provider links, no endorsement/approval claims, four local logo images with alt text.
+- Promotion and waitlist form absent.
+- All 30 exact stored Q&A chip answers, no API calls; original 13 questions and five starters still work.
+- Personal zakat/purification requests receive principles and scholar referral, no calculation.
+- New journey ignores stale replies/actions. 429 still displays built-in answer.
+- Updated server starts cleanly without a key.
+- GET /: 200; GET /health and /api/health: 200 {"ok":true}.
+- POST /api/ask: 200; Tesla answer is plain language, no standard/clause labels.
+- All three active self-hosted fonts: HTTP 200, WOFF2 signatures.
+- Four logo routes: HTTP 200 with SVG MIME type. SVGs parsed successfully; no scripts, event handlers or external references.
+- No-key fallback passes. Deliberately invalid key receives actual provider 401, while app returns 200 and a built-in answer without exposed error.
+- Rate limit: requests 1-10 return 200, request 11 returns 429 with a built-in answer and Retry-After.
+- All 30 typed Q&A checks still skip the provider. Personal zakat amount maps to the general principle answer.
+- ZIP files at top level, no node_modules, .env or actual API key.
+
+NOT RUN / UNVERIFIED
+- Rendered 1280px/400px layout, visual smoothness, logo appearance, dark-mode readability and native browser interaction. Browser policy verification failed during the latest browser attempt and denied access; no indirect workaround was used.
+- Successful OpenAI call with a valid key, including live Hindi/Malayalam. No valid key available; mocked tools and actual invalid-key failure tested.
+- Native browser View Transition rendering. Cancellation/fallback logic tested independently, visual animation unverified.
+
+FAILED
+No executed functional check remains failing. Visual acceptance is unverified.
+
+OUTPUTS
+verification/current-final-flow-dom.json
+verification/current-final-flow-api.json
+verification/current-final-flow-live.json
+
+Menu logo update: the menu wordmark and loader now share the same amber diamond styling. Decorative marks have aria-hidden labels. Source/build checked; rendered browser appearance remains unverified.
+
+FINAL ARCHIVE ADDITIONS PASSED
+- final 1 and final 2 contain identical app files; final 1 also contains instructions and screenshots. Read supplied instructions, README and source; inspected the review screenshot as a reference.
+- Eight-step navigation; Build it in the UAE advances to Review your journey.
+- Six review rows: profile, protection, goal, monthly amount, mix, stocks. Correct AED 1,433 example and retained stock weight displayed.
+- Change actions reopen their steps. Review Ask Safr opens the shared drawer. All sidebar ticks appear on review.
+- Review reset clears name, age, coverage status, stock portfolio and completion. Skipped protection is accurately described.
+- Five supplied starter questions and follow-ups, excluding previously asked questions. Stored answers remain instant, with openings and follow-ups outside the exact answer copy.
+- Expanded takaful answer matches the new pack. Added stock-halal explanation uses plain reasoning, honoring the user's direct request to omit standards while checking halal.
+- Intentional overrides preserved: no motto, no waitlist, official local logos, loading diamond in menu, “Ask Safr where you can reach” placeholder, smooth transitions and no standard labels in asset checks.
+- Rendered 1280px/400px checks and a valid-key OpenAI call remain unverified for the reasons above. Waitlist check is superseded by the direct removal request.

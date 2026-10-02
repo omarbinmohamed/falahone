@@ -1,0 +1,296 @@
+{
+  "home": {
+    "status": 200,
+    "containsUpdatedHome": true
+  },
+  "health": {
+    "status": 200,
+    "body": {
+      "ok": true
+    }
+  },
+  "pack": {
+    "status": 200,
+    "count": 30
+  },
+  "rate": [
+    {
+      "request": 1,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 2,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 3,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 4,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 5,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 6,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 7,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 8,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 9,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 10,
+      "status": 200,
+      "source": "builtin",
+      "hasAnswer": true
+    },
+    {
+      "request": 11,
+      "status": 429,
+      "source": "builtin",
+      "hasAnswer": true
+    }
+  ],
+  "noKey": {
+    "status": 200,
+    "body": {
+      "answer": "Some halal stocks still earn a small amount of income from interest. AAOIFI allows up to 5% of a company's income from prohibited sources, but you must give away the part that belongs to your shares. (AAOIFI Standard 21, clause 3/4/6)\n\nThe steps: 1) Find the company's prohibited income for its financial year. 2) Divide it by the number of shares to get the amount per share. 3) Multiply by the shares you own. (3/4/6/4)\n\nShortcut at today's price: your holding value x (prohibited income / market cap). Example: AED 10,000 in a company where that ratio is 0.12% means about AED 12 to give away.\n\nThat money is given away, not kept, and you may not benefit from it yourself, including to pay taxes. (3/4/6/5) Screening is informational, not a fatwa.",
+      "source": "builtin",
+      "basis": "AAOIFI",
+      "text": "Some halal stocks still earn a small amount of income from interest. AAOIFI allows up to 5% of a company's income from prohibited sources, but you must give away the part that belongs to your shares. (AAOIFI Standard 21, clause 3/4/6)\n\nThe steps: 1) Find the company's prohibited income for its financial year. 2) Divide it by the number of shares to get the amount per share. 3) Multiply by the shares you own. (3/4/6/4)\n\nShortcut at today's price: your holding value x (prohibited income / market cap). Example: AED 10,000 in a company where that ratio is 0.12% means about AED 12 to give away.\n\nThat money is given away, not kept, and you may not benefit from it yourself, including to pay taxes. (3/4/6/5) Screening is informational, not a fatwa."
+    }
+  },
+  "limit": {
+    "status": 429,
+    "body": {
+      "answer": "Apple (AAPL): Halal, income unverified. Its main business is permissible, and its available financial figures pass the halal checks.\n\nPermissible core business\nBorrowing is within the screening limit.\nInterest-bearing deposits are within the screening limit.\nInterest income is not published, so this part of the check is unverified.\n\n+29.7% over 12 months (price only), as of 1 Oct 2026.\n\nScreening is informational, not a fatwa.",
+      "source": "builtin",
+      "basis": "General",
+      "limited": true,
+      "text": "Apple (AAPL): Halal, income unverified. Its main business is permissible, and its available financial figures pass the halal checks.\n\nPermissible core business\nBorrowing is within the screening limit.\nInterest-bearing deposits are within the screening limit.\nInterest income is not published, so this part of the check is unverified.\n\n+29.7% over 12 months (price only), as of 1 Oct 2026.\n\nScreening is informational, not a fatwa."
+    }
+  },
+  "wrongKey": {
+    "status": 200,
+    "body": {
+      "answer": "AAOIFI's standards on this aren't in my knowledge yet. Please consult a qualified scholar.",
+      "source": "builtin",
+      "basis": "General",
+      "text": "AAOIFI's standards on this aren't in my knowledge yet. Please consult a qualified scholar."
+    },
+    "serverLog": "Safr listening on port 3011; OpenAI enabled with built-in fallback\nUsing built-in answer: Provider status 401\n"
+  },
+  "storedAnswersWithInvalidKey": [
+    {
+      "id": "purify",
+      "status": 200,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "purify_who",
+      "status": 200,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "purify_where",
+      "status": 200,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "purify_example",
+      "status": 200,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "dividend_purify",
+      "status": 200,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "five_pct",
+      "status": 200,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "stock_halal",
+      "status": 200,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "halal_investing",
+      "status": 200,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "riba",
+      "status": 200,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "sukuk",
+      "status": 200,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "takaful",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "zakat_amount",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "zakat",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "gold",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "etf",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "loan",
+      "status": 429,
+      "exact": true,
+      "basis": "Personal"
+    },
+    {
+      "id": "crypto",
+      "status": 429,
+      "exact": true,
+      "basis": "Personal"
+    },
+    {
+      "id": "aaoifi",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "fatwa",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "recheck",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "interest",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "haram_business",
+      "status": 429,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "bank_stock",
+      "status": 429,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "own_shares",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "dividend_halal",
+      "status": 429,
+      "exact": true,
+      "basis": "AAOIFI"
+    },
+    {
+      "id": "gharar",
+      "status": 429,
+      "exact": true,
+      "basis": "General"
+    },
+    {
+      "id": "safr_money",
+      "status": 429,
+      "exact": true,
+      "basis": "Safr"
+    },
+    {
+      "id": "safr_guarantee",
+      "status": 429,
+      "exact": true,
+      "basis": "Safr"
+    },
+    {
+      "id": "safr_mix",
+      "status": 429,
+      "exact": true,
+      "basis": "Safr"
+    },
+    {
+      "id": "safr_licensed",
+      "status": 429,
+      "exact": true,
+      "basis": "Safr"
+    }
+  ],
+  "storedAnswersSkipProvider": true
+}

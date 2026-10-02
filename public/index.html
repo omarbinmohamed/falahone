@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Safr by Falahone</title>
+<meta name="description" content="Safr is a guided halal-investing agent for people building a life in Abu Dhabi. Prototype by Falahone.">
+<meta name="theme-color" content="#EBA212">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231B1206'/%3E%3Ccircle cx='16' cy='16' r='7' fill='none' stroke='%23EBA212' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="preload" href="/fonts/cal-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>@font-face{font-family:"Cal Sans";font-weight:400;font-display:swap;src:url(/fonts/cal-sans-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:Inter;font-weight:100 900;font-display:swap;src:url(/fonts/inter-latin-wght-normal.woff2) format('woff2')}
+@font-face{font-family:Urbanist;font-weight:100 900;font-display:swap;src:url(/fonts/urbanist-latin-wght-normal.woff2) format('woff2')}
+:root{--bg:#FDFBF7;--surface:#fff;--raised:#F5F0E6;--text:#1B1206;--dim:#6B5B47;--brand:#EBA212;--brand-deep:#C98A0C;--brand-text:#8F5F05;--pos:#1F6B32;--neg:#A32218;--line:rgba(27,18,6,.14);--forest:#003D06;--olive:#66722E;--navy:#0E2945;--wine:#651B1E;--brown:#472F00;--ink:#1B1206;--bone:#F7F2E8}
+:root[data-theme=dark]{--bg:#14100A;--surface:#1E1810;--raised:#2A2218;--text:#F7F2E8;--dim:#A79680;--brand-text:#EBA212;--pos:#4FBF6A;--neg:#F0705F;--line:rgba(247,242,232,.14)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#14100A;--surface:#1E1810;--raised:#2A2218;--text:#F7F2E8;--dim:#A79680;--brand-text:#EBA212;--pos:#4FBF6A;--neg:#F0705F;--line:rgba(247,242,232,.14)}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif;font-size:16px;line-height:1.5;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+a{color:var(--brand-text)}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.ring{display:inline-block;width:22px;height:22px;border-radius:50%;border:4px solid var(--brand);box-shadow:0 0 14px 2px rgba(235,162,18,.55);flex:none}
+/* LOADER */
+#loader{position:fixed;inset:0;background:#1A1209;color:#F7F2E8;z-index:50;display:flex;align-items:center;justify-content:center;transition:opacity .65s cubic-bezier(.4,0,.2,1)}
+#loader.out{opacity:0;pointer-events:none}
+.ld{width:min(250px,80vw);text-align:center;transition:opacity .6s cubic-bezier(.4,0,.2,1)}
+.safr-mark{display:inline-block;flex:none;width:26px;height:26px;border:2px solid #EBA212;border-radius:6px;transform:rotate(45deg);box-shadow:0 0 22px 4px rgba(235,162,18,.45),inset 0 0 8px rgba(235,162,18,.35)}
+.ld .safr-mark{display:block;margin:0 auto 52px;animation:pulse 1.8s ease-in-out infinite}
+.bar{height:2px;background:rgba(247,242,232,.18)}.bar i{display:block;height:2px;width:0;background:var(--brand)}
+.ldt{display:flex;justify-content:space-between;margin-top:16px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:400;font-size:10px;letter-spacing:.1em;color:#B7A68E;text-align:left}.ldt span:last-child{color:#F7F2E8;font-weight:700}
+.wm{position:absolute;text-align:center;opacity:0;transition:opacity .6s cubic-bezier(.4,0,.2,1);color:#EBA212}
+.wm b{display:block;font-weight:900;font-size:clamp(48px,12vw,84px);letter-spacing:.1em;text-transform:uppercase;line-height:1}
+.wm span{display:block;margin-top:12px;font-weight:500;font-size:13px;letter-spacing:.32em;color:#F7F2E8}
+#loader.done .ld{opacity:0}#loader.done .wm{opacity:1}
+@keyframes pulse{50%{box-shadow:0 0 34px 10px rgba(235,162,18,.6),inset 0 0 10px rgba(235,162,18,.5)}}
+/* HERO (amber ground, black type) */
+#hero{transition:opacity .56s cubic-bezier(.4,0,.2,1);position:fixed;inset:0;z-index:20;background:#EBA212;color:#1B1206;display:flex;flex-direction:column;overflow:hidden}
+#hero.leaving{opacity:0;pointer-events:none}
+#hero::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 60% at 85% 0%,rgba(255,214,120,.55),transparent 60%),radial-gradient(70% 60% at 0% 100%,rgba(201,138,12,.45),transparent 60%);pointer-events:none}
+#hero::after{content:"";position:absolute;inset:0;opacity:.09;mix-blend-mode:multiply;pointer-events:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.pill{position:relative;z-index:2;margin:20px clamp(16px,3vw,40px) 0;display:flex;align-items:center;gap:18px;background:#1B1206;color:#F7F2E8;border-radius:999px;padding:10px 12px 10px 20px}
+.pill .st{display:flex;align-items:center;gap:8px;font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#A79680;white-space:nowrap}
+.pill .st i{width:8px;height:8px;border-radius:50%;background:#4FBF6A}
+.pill nav{margin-left:auto;display:flex;gap:22px;font-weight:500;font-size:14px}
+.pill nav button{color:#F7F2E8;opacity:.9}.pill nav button:hover{opacity:1;text-decoration:underline}
+.pill .cta{background:#EBA212;color:#1B1206;font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;border-radius:999px;padding:11px 18px}
+.pill .tg{width:38px;height:38px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(247,242,232,.25);color:#F7F2E8;font-size:16px}
+.hmain{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(24px,5vh,60px) clamp(16px,3vw,40px) 28px;min-height:0}
+#hero h1{font-weight:900;font-size:clamp(46px,10.5vw,132px);line-height:.95;letter-spacing:-.035em;color:#1B1206}
+#hero h1 span{display:block;opacity:0;transform:translateY(16px);animation:rise .9s cubic-bezier(.22,1,.36,1) forwards;animation-play-state:paused}
+#hero.ready h1 span,#hero.ready .hside{animation-play-state:running}
+#hero h1 span:nth-child(2){animation-delay:.12s}#hero h1 span:nth-child(3){animation-delay:.24s}
+#hero .hhead{display:flex;justify-content:space-between;align-items:flex-start;gap:32px}
+.hside{width:min(380px,32vw);flex:none;padding-top:clamp(8px,2vh,24px);opacity:0;animation:rise .9s .28s cubic-bezier(.22,1,.36,1) forwards;animation-play-state:paused}
+.hside .hk{font-weight:700;font-size:11px;letter-spacing:.24em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px}
+.hside .hk::before{content:"";width:28px;height:2px;background:#1B1206}
+.hside p{font-size:clamp(15px,1.25vw,17px);font-weight:500;line-height:1.5;color:#1B1206}
+.hside ul{list-style:none;counter-reset:st;margin-top:18px;border-top:1.5px solid rgba(27,18,6,.35)}
+.hside li{display:flex;flex-direction:column;gap:2px;padding:12px 0 12px 40px;position:relative;counter-increment:st;border-bottom:1.5px solid rgba(27,18,6,.35)}
+.hside li::before{content:counter(st);position:absolute;left:0;top:12px;width:26px;height:26px;border-radius:50%;border:1.5px solid #1B1206;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.hside li b{font-weight:900;font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+.hside li span{font-size:14px;font-weight:500}
+#hero h1 em{font-style:normal;color:#003D06}
+@keyframes rise{to{opacity:1;transform:none}}
+.hfoot{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.hfoot p{font-size:clamp(15px,2vw,20px);max-width:520px;font-weight:500;color:#1B1206}
+.hbtn{border:1.5px solid #1B1206;border-radius:999px;padding:15px 26px;font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;color:#1B1206}
+.hbtn:hover{background:#1B1206;color:#EBA212}
+.tick{position:relative;z-index:1;border-top:1.5px solid rgba(27,18,6,.35);overflow:hidden;white-space:nowrap;padding:14px 0;background:#EBA212}
+.tick div{display:inline-block;animation:marq 38s linear infinite;font-weight:900;font-size:clamp(18px,2.6vw,30px);letter-spacing:.04em;text-transform:uppercase;color:#1B1206}
+.tick span{margin:0 26px}
+@keyframes marq{to{transform:translateX(-50%)}}
+/* APP SHELL */
+#app{position:fixed;inset:0;display:none;background:var(--bg)}
+#app.on{display:grid;grid-template-columns:288px 1fr}
+#side{background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:20px 16px;overflow:auto;z-index:15}
+.brand{display:flex;align-items:center;gap:16px;padding:8px 8px 6px}
+.brand b{font-weight:900;font-size:22px;letter-spacing:.1em;text-transform:uppercase}
+.sub{font-weight:500;font-size:10px;letter-spacing:.32em;color:var(--dim);padding:0 8px 18px 40px;text-transform:uppercase}
+.newj{border:1.5px solid var(--text);border-radius:999px;padding:11px 16px;font-weight:700;font-size:12px;letter-spacing:.12em;text-transform:uppercase;margin:0 4px 18px}
+.lab{font-weight:500;font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);padding:0 10px 8px}
+.step{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;border-radius:12px;font-weight:500;font-size:15px;margin-bottom:3px}
+.step:hover{background:var(--raised)}
+.step .n{width:26px;height:26px;border-radius:50%;box-shadow:inset 0 0 0 1.5px var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none}
+.step.on{background:var(--brand);color:var(--ink);font-weight:700}.step.on .n{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.step.done .n{background:var(--pos);color:#fff;box-shadow:none}
+.sfoot{margin-top:auto;padding:16px 10px 0;font-size:12px;color:var(--dim);letter-spacing:.06em}
+#main{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0}
+.top{display:flex;align-items:center;gap:10px;padding:12px 20px;border-bottom:1px solid var(--line)}
+.top .t{font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.top .sp{margin-left:auto;display:flex;gap:8px}
+.ib{height:40px;min-width:40px;padding:0 14px;border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--line);font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+.ib.p{background:var(--brand);color:var(--ink);box-shadow:none}
+#menu{display:none}
+#stage{flex:1;overflow:auto;padding:28px clamp(16px,4vw,56px) 90px}
+.wrap{max-width:860px;margin:0 auto}
+#homeSlot{flex:1;min-height:0;display:flex}
+/* guide + cards */
+.guide{display:flex;gap:14px;align-items:flex-start;background:var(--raised);border-radius:16px;padding:18px 20px;margin-bottom:22px}
+.guide .ring{margin-top:3px}.guide p{font-size:17px;font-weight:500}
+h2.h{font-weight:900;font-size:26px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.eyebrow{font-weight:500;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--brand-text);margin-bottom:6px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+.card h3{font-weight:700;font-size:18px;margin-bottom:6px}
+.card p{color:var(--dim);font-size:15px;margin-bottom:8px}
+.tagc{display:inline-block;font-weight:500;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;padding:5px 10px;border-radius:999px;background:var(--raised);margin-top:4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+.btn{display:inline-block;font-weight:700;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;padding:14px 22px;border-radius:999px}
+.btn.p{background:var(--brand);color:var(--ink)}.btn.p:hover{background:var(--brand-deep)}
+a.btn{text-decoration:none;color:var(--text)}
+.btn.s{box-shadow:inset 0 0 0 1.5px var(--text)}.btn.g{color:var(--dim);text-decoration:underline}
+.chip{display:inline-block;padding:9px 15px;border-radius:999px;box-shadow:inset 0 0 0 1.5px var(--line);font-size:14px;font-weight:500;margin:0 8px 8px 0;background:var(--surface);text-align:left}
+.chip:hover{box-shadow:inset 0 0 0 1.5px var(--text)}.chip.on{background:var(--brand);color:var(--ink);box-shadow:none;font-weight:700}
+.note{font-size:13px;color:var(--dim);margin-top:10px}
+/* goal */
+.sl{margin:16px 0}.sl label{display:flex;justify-content:space-between;font-weight:500;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
+.sl label b{color:var(--text);font-weight:700;letter-spacing:.02em;font-size:17px;text-transform:none}
+input[type=range]{width:100%;accent-color:#EBA212;height:28px}
+.res{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;margin-top:10px}
+.res .big{font-weight:900;font-size:clamp(34px,6vw,52px);letter-spacing:-.02em;line-height:1.05}
+.res .gr{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.res .gr div span{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:500}
+.res .gr div b{font-size:18px}
+/* mix */
+.mixbar{display:flex;height:46px;border-radius:12px;overflow:hidden;margin:14px 0 8px;font-weight:700;font-size:14px}
+.mixbar div{display:flex;align-items:center;justify-content:center;color:#F7F2E8;min-width:0;white-space:nowrap}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--dim)}.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+/* search & verdict */
+.sbox{display:flex;gap:8px;background:var(--surface);border:1.5px solid var(--text);border-radius:999px;padding:6px 6px 6px 20px;align-items:center}
+.sbox input{flex:1;border:0;background:none;font:inherit;font-size:17px;color:var(--text);min-width:0;padding:8px 0;outline:0}
+.sug{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-top:6px;overflow:hidden}
+.sug button{display:flex;justify-content:space-between;width:100%;padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}.sug button:last-child{border:0}.sug button:hover{background:var(--raised)}
+.vp{display:inline-block;font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding:7px 14px;border-radius:999px;color:#fff}
+.vp.y{background:var(--forest)}.vp.n{background:var(--neg);color:#fff}:root[data-theme=dark] .vp.n{color:#14100A}.vp.u{background:var(--raised);color:var(--text)}
+.tests{margin:12px 0;border-top:1px solid var(--line)}
+.tests div{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.tests .m{font-weight:700;width:18px;flex:none}.tests .ok{color:var(--pos)}.tests .no{color:var(--neg)}
+.pf{margin-top:24px}
+.prow{display:grid;grid-template-columns:1fr auto;gap:6px 14px;padding:14px 0;border-bottom:1px solid var(--line);align-items:center}
+.prow .w{grid-column:1/-1;display:flex;align-items:center;gap:12px}.prow .w b{min-width:44px;text-align:right}
+.rm{font-size:13px;color:var(--dim);text-decoration:underline}
+.split{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--raised);margin:12px 0 6px}
+.split i{display:block;height:100%}
+/* tabs */
+.tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.form input{display:block;width:100%;padding:14px 16px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--text);font:inherit;margin-bottom:10px}
+/* CHAT */
+#chat{display:flex;flex-direction:column;flex:1;min-width:0;min-height:0;width:100%}
+#thread{flex:1;overflow:auto;padding:24px clamp(16px,4vw,40px) 8px;display:flex;flex-direction:column;gap:16px}
+.cw{width:100%;max-width:760px;margin:0 auto}
+#chat.empty{justify-content:center;align-items:center}
+#chat.empty #thread{flex:0 0 auto;overflow:visible}
+.greet{text-align:center;padding:0 0 8px}
+.greet .k{font-weight:500;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--brand-text)}
+.greet h2{font-weight:900;font-size:clamp(28px,5vw,44px);letter-spacing:-.02em;line-height:1.1;margin:8px 0 6px}
+.msg{display:flex;gap:12px;max-width:100%}
+.msg.u{justify-content:flex-end}
+.bub{background:var(--raised);padding:12px 16px;border-radius:16px;max-width:88%;font-size:15.5px;line-height:1.55;overflow-wrap:anywhere}
+.msg.u .bub{background:var(--brand);color:var(--ink);font-weight:500}
+.msg.s .ring{margin-top:6px;width:18px;height:18px;border-width:3px}
+.msg .chips{margin-top:10px}
+.tagm{display:inline-block;margin-top:10px;font-weight:500;font-size:10px;letter-spacing:.18em;text-transform:uppercase;padding:4px 9px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);color:var(--dim)}
+.dots span{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--dim);margin-right:4px;animation:bl 1s infinite}.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes bl{50%{opacity:.25}}
+#composer{padding:10px clamp(16px,4vw,40px) 6px;width:100%}
+.cbox{display:flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--text);border-radius:999px;padding:8px 8px 8px 22px;max-width:760px;margin:0 auto;box-shadow:0 6px 24px rgba(27,18,6,.08)}
+.cbox input{flex:1;border:0;background:none;font:inherit;font-size:17px;color:var(--text);outline:0;min-width:0;padding:8px 0}
+.send{width:44px;height:44px;border-radius:50%;background:var(--brand);color:var(--ink);font-weight:900;font-size:20px;flex:none}
+.disc{max-width:760px;margin:8px auto 10px;text-align:center;font-size:12px;color:var(--dim)}
+#below{max-width:760px;margin:6px auto 0;padding:0 clamp(16px,4vw,40px) 24px;width:100%;display:none}
+#chat.empty #below{display:block}
+#below .main{text-align:center;margin:14px 0 18px}
+#below details{margin-top:6px}#below summary{cursor:pointer;font-weight:500;font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);padding:8px 0}
+#drawer{position:fixed;top:0;right:0;bottom:0;width:min(440px,100vw);background:var(--bg);border-left:1px solid var(--line);transform:translateX(105%);transition:transform .46s cubic-bezier(.22,1,.36,1);z-index:30;display:flex;flex-direction:column;box-shadow:-10px 0 40px rgba(0,0,0,.15)}
+#drawer.open{transform:none}
+#drawer .dh{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+#drawer .dh button{margin-left:auto;font-size:22px}
+#fab{position:fixed;right:20px;bottom:20px;z-index:12;background:var(--brand);color:var(--ink);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;padding:15px 22px;border-radius:999px;box-shadow:0 8px 28px rgba(27,18,6,.25);display:none}
+body[data-view=step] #fab{display:block}
+
+/* AMBER APP (light theme): same ground and black type as the hero */
+:root[data-theme=light]{--bg:#EBA212;--surface:#FBF6EA;--raised:#F6D88A;--dim:#4A3410;--brand-text:#1B1206;--line:rgba(27,18,6,.28);--pos:#003D06}
+:root[data-theme=light] body{background:#EBA212}
+:root[data-theme=light] #app{background:#EBA212}
+:root[data-theme=light] #side{background:#1B1206;color:#F7F2E8;border-right:0}
+:root[data-theme=light] #side .sub,:root[data-theme=light] #side .lab,:root[data-theme=light] #side .sfoot{color:#A79680}
+:root[data-theme=light] #side .newj{border-color:#F7F2E8;color:#F7F2E8}
+:root[data-theme=light] #side .step:hover{background:rgba(247,242,232,.1)}
+:root[data-theme=light] #side .step .n{box-shadow:inset 0 0 0 1.5px rgba(247,242,232,.35)}
+:root[data-theme=light] #side .step.on{background:#EBA212;color:#1B1206}
+:root[data-theme=light] #side .step.on .n{box-shadow:inset 0 0 0 1.5px #1B1206}
+:root[data-theme=light] #side .step.done .n{background:#4FBF6A;color:#1B1206}
+:root[data-theme=light] .top{border-color:rgba(27,18,6,.3)}
+:root[data-theme=light] .top .t,:root[data-theme=light] .eyebrow,:root[data-theme=light] .greet .k{color:#1B1206}
+:root[data-theme=light] .btn.p,:root[data-theme=light] .ib.p,:root[data-theme=light] .send,:root[data-theme=light] #fab{background:#1B1206;color:#F7F2E8}
+:root[data-theme=light] .btn.p:hover{background:#003D06}
+:root[data-theme=light] .chip.on,:root[data-theme=light] .msg.u .bub{background:#1B1206;color:#F7F2E8}
+:root[data-theme=light] .chip{background:#FBF6EA}
+:root[data-theme=light] .cbox,:root[data-theme=light] .sbox{border-color:#1B1206}
+:root[data-theme=light] .guide{background:#F6D88A}
+:root[data-theme=light] .guide .ring,:root[data-theme=light] .msg.s .ring{border-color:#1B1206;box-shadow:none}
+:root[data-theme=light] input[type=range]{accent-color:#1B1206}
+:root[data-theme=light] #drawer{background:#EBA212}
+:root[data-theme=light] .tagc{background:#F6D88A}
+:root[data-theme=light] .card[style*="var(--brand)"]{background:#1B1206!important;color:#F7F2E8}
+:root[data-theme=light] .card[style*="var(--brand)"] .btn{background:#EBA212!important;color:#1B1206!important}
+:root[data-theme=light] .card[style*="var(--brand)"] h3,:root[data-theme=light] .card[style*="var(--brand)"] p{color:#F7F2E8!important}
+@media(max-width:820px){
+ #app.on{grid-template-columns:1fr}
+ #side{position:fixed;inset:0 auto 0 0;width:300px;max-width:86vw;transform:translateX(-105%);transition:transform .42s cubic-bezier(.22,1,.36,1);box-shadow:10px 0 40px rgba(0,0,0,.2)}
+ #side.open{transform:none}#menu{display:inline-flex;align-items:center;justify-content:center}
+ #hero .hhead{display:block}.hside{width:auto;padding-top:18px}.hside ul{display:none}
+ .pill nav,.pill .st{display:none}.pill{padding:8px 8px 8px 16px}.pill .cta{margin-left:auto}
+ .res .gr{grid-template-columns:1fr 1fr}
+ #fab{right:14px;bottom:14px}
+}
+@media(max-width:1100px){.hside ul li span{display:none}}
+@media(prefers-reduced-motion:reduce){.hside{opacity:1}*{animation:none!important;transition:none!important}#hero h1 span{opacity:1;transform:none}.tick div{animation:none}}
+
+/* TYPE: Cal Sans for headlines, Inter for reading, Urbanist for labels and buttons (same trio as the reference site) */
+:root{--fd:"Cal Sans","Inter",system-ui,sans-serif;--fl:Urbanist,Inter,system-ui,sans-serif}
+#hero h1,.wm b,.brand b,.res .big,.greet h2,h2.h,.card h3,#drawer .dh,.tick div,.step.on,.hside li b{font-family:var(--fd);font-weight:400}
+#hero h1{letter-spacing:-.03em;line-height:.98}
+h2.h{text-transform:none;letter-spacing:-.01em;font-size:clamp(28px,4vw,40px);line-height:1.1}
+.greet h2{letter-spacing:-.025em}
+.res .big{letter-spacing:-.015em}
+.brand b{letter-spacing:.06em}
+.wm b{letter-spacing:.06em}
+.tick div{letter-spacing:.02em}
+.card h3{font-size:20px;letter-spacing:-.005em}
+.hside li b{letter-spacing:.04em}
+.pill .st,.pill nav,.pill .cta,.hbtn,.btn,.ib,.newj,.lab,.eyebrow,.greet .k,.hk,.tagc,.tagm,.vp,.step,.chip,.ldt,.sub,.top .t,#fab,.sl label,.res .gr div span,#below summary{font-family:var(--fl)}
+.ldt{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.btn,.hbtn,.ib,.newj,.pill .cta,#fab,.vp{font-weight:700}
+.step,.chip{font-weight:600}
+#hero h1,h2.h,.greet h2,.res .big,.card h3,.step.on{word-spacing:.08em}
+.res .big{font-variant-numeric:normal}
+
+/* Brand assets retain their original colours on a fixed contrast surface. */
+.provider-logo{display:flex;align-items:center;justify-content:flex-start;background:#fff;border-radius:12px;padding:12px 16px;min-height:68px;margin-bottom:16px}
+.provider-logo img{display:block;width:auto;max-width:100%;height:36px;object-fit:contain}
+.provider-logo.wahed{background:#142B28}
+
+/* Native crossfades keep the old screen visible while the next screen arrives. */
+::view-transition{pointer-events:none}
+::view-transition-old(root){animation:safr-leave .22s cubic-bezier(.4,0,1,1) both;mix-blend-mode:normal}
+::view-transition-new(root){animation:safr-arrive .48s cubic-bezier(.22,1,.36,1) both;mix-blend-mode:normal}
+@keyframes safr-leave{to{opacity:0}}
+@keyframes safr-arrive{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.rv{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:16px 0;border-bottom:1px solid var(--line)}
+.rv:last-child{border-bottom:0}
+.rv .rk{font-family:var(--fl);font-weight:600;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.rv .rvv{font-size:16px;margin-top:4px;min-width:0;overflow-wrap:anywhere}
+.rv .rm{flex:none;padding-top:4px}
+
+.chat-opening{font-weight:500;margin:0 0 10px}.answer-copy{overflow-wrap:anywhere}
+</style>
+</head>
+<body data-view="home">
+
+<div id="loader" role="status" aria-label="Loading Safr">
+  <div class="ld"><span class="dia safr-mark" aria-hidden="true"></span><div class="bar"><i id="ldbar"></i></div><div class="ldt"><span>Settle in, start your Safr.</span><span id="ldpct" class="num">0%</span></div></div>
+  <div class="wm"><b>Safr</b><span>BY FALAHONE</span></div>
+</div>
+
+<section id="hero" aria-label="Safr by Falahone">
+  <div class="pill">
+    <span class="st"><i></i>Prototype by Falahone</span>
+    <nav aria-label="Main">
+      <button data-go="protect">Journey</button>
+      <button data-go="portfolio">Check a stock</button>
+      <button data-go="protect">Takaful</button>
+      <button data-ask>Ask Safr</button>
+    </nav>
+    <button class="cta" data-enter>Ask Safr →</button>
+    <button class="tg" data-theme aria-label="Switch light and dark">◐</button>
+  </div>
+  <div class="hmain">
+    <div class="hhead"><h1><span>Ask Safr</span><span>where you</span><span>can <em>reach.</em></span></h1>
+    <aside class="hside" aria-label="What Safr is">
+      <div class="hk">Your finance companion</div>
+      <p>Safr walks with you through your money journey in the UAE. It starts with protecting yourself, builds the asset mix that fits your goal, then shows you where to do it.</p>
+      <ul>
+        <li><b>Protect</b><span>A safety cushion and takaful, before you invest.</span></li>
+        <li><b>Plan</b><span>The asset mix for your goal and timeline, with halal screening on every stock.</span></li>
+        <li><b>Act</b><span>Where you can do it in the UAE: stocks, sukuk and takaful.</span></li>
+      </ul>
+    </aside></div>
+    <div class="hfoot">
+      <p>Your journey to financial freedom, one halal step at a time.</p>
+      <button class="hbtn" data-enter>Start my journey →</button>
+    </div>
+  </div>
+  <div class="tick" aria-hidden="true"><div><span>Halal screening ✦</span><span>Goal planner ✦</span><span>Ask anything about halal investing ✦</span><span>Halal screening ✦</span><span>Goal planner ✦</span><span>Ask anything about halal investing ✦</span><span>Halal screening ✦</span><span>Goal planner ✦</span><span>Ask anything about halal investing ✦</span></div></div>
+</section>
+
+<div id="app">
+  <aside id="side" aria-label="Your journey">
+    <div class="brand"><span class="safr-mark" aria-hidden="true"></span><b>Safr</b></div>
+    <div class="sub">by Falahone</div>
+    <button class="newj" id="newj">New journey</button>
+    <div class="lab">Your journey</div>
+    <div id="steps"></div>
+    <div class="sfoot">Prototype by Falahone.<br><button id="homeBtn" style="text-decoration:underline">Back to Ask Safr</button></div>
+  </aside>
+  <main id="main">
+    <div class="top">
+      <button class="ib" id="menu" aria-label="Open journey menu">Menu</button>
+      <span class="t" id="topT">Ask Safr</span>
+      <div class="sp"><button class="ib" data-theme aria-label="Switch light and dark">◐</button><button class="ib" id="toHero">Intro</button></div>
+    </div>
+    <div id="homeSlot"></div>
+    <div id="stage" hidden></div>
+  </main>
+</div>
+
+<aside id="drawer" aria-label="Ask Safr"><div class="dh"><span class="ring"></span> Ask Safr <button id="dclose" aria-label="Close">×</button></div><div id="dbody" style="flex:1;display:flex;min-height:0"></div></aside>
+<button id="fab">Ask Safr</button>
+
+<section id="chat" class="empty" aria-label="Chat with Safr">
+  <div id="thread" aria-live="polite">
+    <div class="cw greet"><div class="k">Salaam.</div><h2>How can I help build your journey?</h2></div>
+  </div>
+  <form id="composer" autocomplete="off"><div class="cbox"><input id="q" type="text" maxlength="500" placeholder="Ask Safr where you can reach" aria-label="Ask Safr"><button class="send" type="submit" aria-label="Send">↑</button></div>
+    <div class="disc">Safr is an AI guide, not a scholar. Screening is informational, not a fatwa.</div></form>
+  <div id="below">
+    <div class="main"><button class="btn p" id="setup">Set up my financial journey</button></div>
+    <div id="starters"></div>
+    <details><summary>More questions</summary><div id="more"></div></details>
+  </div>
+</section>
+
+<script>
+var DATA = {"units": "market_cap_bn, total_debt_bn, cash_st_investments_bn in billions of currency; revenue_m and non_compliant_income_m in millions; null = not published. price_change is price only, excludes dividends.", "sources": "stockanalysis.com (S&P Global Market Intelligence data), cross-checked against Musaffa", "stocks": [{"ticker": "NVDA", "company": "NVIDIA", "market": "US", "currency": "USD", "business": "Semiconductors / AI chips", "business_screen": "Pass", "business_note": "Permissible core business", "market_cap_bn": 5490, "total_debt_bn": 38.86, "cash_st_investments_bn": 62.47, "revenue_m": 215938, "non_compliant_income_m": 2300, "musaffa_verdict": "HALAL", "price_change_12m_pct": 23.73, "price_change_as_of": "1 Oct 2026", "expected_verdict": "Halal"}, {"ticker": "AAPL", "company": "Apple", "market": "US", "currency": "USD", "business": "Consumer electronics", "business_screen": "Pass", "business_note": "Permissible core business", "market_cap_bn": 4810, "total_debt_bn": 84.34, "cash_st_investments_bn": 146.52, "revenue_m": 416161, "non_compliant_income_m": null, "musaffa_verdict": "HALAL", "price_change_12m_pct": 29.73, "price_change_as_of": "1 Oct 2026", "expected_verdict": "Halal (income unverified)"}, {"ticker": "TSLA", "company": "Tesla", "market": "US", "currency": "USD", "business": "Electric vehicles / energy", "business_screen": "Pass", "business_note": "Permissible core business", "market_cap_bn": 1390, "total_debt_bn": 16.08, "cash_st_investments_bn": 43.52, "revenue_m": 94827, "non_compliant_income_m": 1680, "musaffa_verdict": "HALAL", "price_change_12m_pct": -20.37, "price_change_as_of": "2 Oct 2026", "expected_verdict": "Halal"}, {"ticker": "KO", "company": "Coca-Cola", "market": "US", "currency": "USD", "business": "Non-alcoholic beverages", "business_screen": "Pass", "business_note": "Permissible core business", "market_cap_bn": 373.63, "total_debt_bn": 44.26, "cash_st_investments_bn": 16.37, "revenue_m": 47941, "non_compliant_income_m": 786, "musaffa_verdict": "HALAL", "price_change_12m_pct": 29.83, "price_change_as_of": "1 Oct 2026", "expected_verdict": "Halal"}, {"ticker": "T", "company": "AT&T", "market": "US", "currency": "USD", "business": "Telecom", "business_screen": "Pass", "business_note": "Permissible business", "market_cap_bn": 167.75, "total_debt_bn": 165.76, "cash_st_investments_bn": 17.57, "revenue_m": 125648, "non_compliant_income_m": null, "musaffa_verdict": "NOT HALAL", "price_change_12m_pct": -13.95, "price_change_as_of": "1 Oct 2026", "expected_verdict": "Not Halal"}, {"ticker": "F", "company": "Ford", "market": "US", "currency": "USD", "business": "Autos + Ford Credit (lending)", "business_screen": "Pass", "business_note": "Autos are permissible; Ford Credit lending income counts as prohibited income", "market_cap_bn": 49.05, "total_debt_bn": 163.3, "cash_st_investments_bn": 22.12, "revenue_m": 187267, "non_compliant_income_m": 14761, "musaffa_verdict": "NOT HALAL", "price_change_12m_pct": 2.59, "price_change_as_of": "1 Oct 2026", "expected_verdict": "Not Halal"}, {"ticker": "JPM", "company": "JPMorgan Chase", "market": "US", "currency": "USD", "business": "Conventional bank", "business_screen": "Fail", "business_note": "Interest-based banking is impermissible", "market_cap_bn": 890.44, "total_debt_bn": 1340, "cash_st_investments_bn": 1530, "revenue_m": null, "non_compliant_income_m": null, "musaffa_verdict": "NOT HALAL", "price_change_12m_pct": 5.63, "price_change_as_of": "1 Oct 2026", "expected_verdict": "Not Halal"}, {"ticker": "BUD", "company": "Anheuser-Busch InBev", "market": "US", "currency": "USD", "business": "Beer / alcohol", "business_screen": "Fail", "business_note": "Alcohol is impermissible", "market_cap_bn": 153.09, "total_debt_bn": 72.73, "cash_st_investments_bn": 8.01, "revenue_m": 62620, "non_compliant_income_m": null, "musaffa_verdict": "NOT HALAL", "price_change_12m_pct": 25.62, "price_change_as_of": "30 Sep 2026", "expected_verdict": "Not Halal"}, {"ticker": "ADNOCGAS", "company": "ADNOC Gas", "market": "ADX", "currency": "AED", "business": "Gas processing", "business_screen": "Pass", "business_note": "Permissible core business", "market_cap_bn": 250.86, "total_debt_bn": 1.54, "cash_st_investments_bn": 5.46, "revenue_m": 59980, "non_compliant_income_m": null, "musaffa_verdict": "HALAL", "price_change_12m_pct": -5.76, "price_change_as_of": "23 Sep 2026", "expected_verdict": "Halal (income unverified)"}, {"ticker": "SALIK", "company": "Salik", "market": "DFM", "currency": "AED", "business": "Road tolling (Dubai)", "business_screen": "Pass", "business_note": "Permissible core business", "market_cap_bn": 40.28, "total_debt_bn": 4, "cash_st_investments_bn": 0.5946, "revenue_m": 2980, "non_compliant_income_m": null, "musaffa_verdict": "HALAL", "price_change_12m_pct": -15.41, "price_change_as_of": "7 Sep 2026", "expected_verdict": "Halal (income unverified)"}, {"ticker": "DIB", "company": "Dubai Islamic Bank", "market": "DFM", "currency": "AED", "business": "Islamic bank", "business_screen": "Islamic FI", "business_note": "Islamic bank: its financing is Shariah-structured, so the interest-based ratio tests do not apply", "market_cap_bn": 52.32, "total_debt_bn": 17.65, "cash_st_investments_bn": 19.83, "revenue_m": 12950, "non_compliant_income_m": null, "musaffa_verdict": "HALAL", "price_change_12m_pct": -23.71, "price_change_as_of": "18 Sep 2026", "expected_verdict": "Halal"}, {"ticker": "DEWA", "company": "Dubai Electricity & Water", "market": "DFM", "currency": "AED", "business": "Utility", "business_screen": "Pass", "business_note": "Permissible business", "market_cap_bn": 140, "total_debt_bn": 44.35, "cash_st_investments_bn": 17.93, "revenue_m": 33100, "non_compliant_income_m": null, "musaffa_verdict": "NOT HALAL", "price_change_12m_pct": 2.19, "price_change_as_of": "11 Sep 2026", "expected_verdict": "Not Halal"}, {"ticker": "EAND", "company": "e& (Etisalat)", "market": "ADX", "currency": "AED", "business": "Telecom", "business_screen": "Pass", "business_note": "Permissible business", "market_cap_bn": 189.59, "total_debt_bn": 73.5, "cash_st_investments_bn": 28.34, "revenue_m": 76820, "non_compliant_income_m": null, "musaffa_verdict": "NOT HALAL", "price_change_12m_pct": 24.15, "price_change_as_of": "11 Sep 2026", "expected_verdict": "Not Halal"}, {"ticker": "ALDAR", "company": "Aldar Properties", "market": "ADX", "currency": "AED", "business": "Real estate + hotels", "business_screen": "Review", "business_note": "Real estate plus hospitality", "market_cap_bn": 59.76, "total_debt_bn": 34.56, "cash_st_investments_bn": 22.82, "revenue_m": 35130, "non_compliant_income_m": null, "musaffa_verdict": "NOT HALAL", "price_change_12m_pct": -22.05, "price_change_as_of": "14 Aug 2026", "expected_verdict": "Not Halal"}, {"ticker": "FAB", "company": "First Abu Dhabi Bank", "market": "ADX", "currency": "AED", "business": "Conventional bank", "business_screen": "Fail", "business_note": "Interest-based banking is impermissible", "market_cap_bn": 222.5, "total_debt_bn": 239.75, "cash_st_investments_bn": 483.67, "revenue_m": 34020, "non_compliant_income_m": null, "musaffa_verdict": "NOT HALAL", "price_change_12m_pct": 21.47, "price_change_as_of": "23 Sep 2026", "expected_verdict": "Not Halal"}]};
+var QA = [{"id": "purify", "question": "How do you purify your investments?", "answer": "Some halal stocks still earn a small amount of income from interest. AAOIFI allows up to 5% of a company's income from prohibited sources, but you must give away the part that belongs to your shares. (AAOIFI Standard 21, clause 3/4/6)\n\nThe steps: 1) Find the company's prohibited income for its financial year. 2) Divide it by the number of shares to get the amount per share. 3) Multiply by the shares you own. (3/4/6/4)\n\nShortcut at today's price: your holding value x (prohibited income / market cap). Example: AED 10,000 in a company where that ratio is 0.12% means about AED 12 to give away.\n\nThat money is given away, not kept, and you may not benefit from it yourself, including to pay taxes. (3/4/6/5) Screening is informational, not a fatwa.", "basis": "AAOIFI", "category": "Purification"}, {"id": "purify_who", "question": "Who has to purify, and when?", "answer": "Whoever owns the share at the end of the company's financial period, whether they are a long-term investor or a trader. If you sold before the period ended, you do not owe it for that period. (AAOIFI Standard 21, clause 3/4/6/1)\n\nIt is due even if the company paid no dividend, and whether it made a profit or a loss. (3/4/6/2)\n\nFor a ruling on your situation, please ask a qualified scholar.", "basis": "AAOIFI", "category": "Purification"}, {"id": "purify_where", "question": "Where does the purified money go?", "answer": "AAOIFI says the purified amount may not bring any benefit to you, including paying your taxes. (AAOIFI Standard 21, clause 3/4/6/5) The usual route is giving it away to charity.\n\nWhich charity or cause is a question for your scholar. Safr does not choose for you, and Safr does not collect or hold any money. For a ruling on your situation, please ask a qualified scholar.", "basis": "AAOIFI", "category": "Purification"}, {"id": "purify_example", "question": "Show me an example of purification", "answer": "Example using Safr's data, with a holding of USD 1,000 and the shortcut: holding value x (prohibited income / market cap).\n\nTesla: USD 1,680m / USD 1,390bn = 0.12%, so about USD 1.21 to give away.\nNVIDIA: USD 2,300m / USD 5,490bn = 0.04%, so about USD 0.42.\nCoca-Cola: USD 786m / USD 373.6bn = 0.21%, so about USD 2.10.\n\nThese use interest income as the prohibited income, because that is what is published. A company's real figure can be higher, so treat this as an estimate. It is a worked example, not your personal amount. For a ruling on your situation, please ask a qualified scholar.", "basis": "AAOIFI", "category": "Purification"}, {"id": "dividend_purify", "question": "Do I purify if I only hold, and the company pays no dividend?", "answer": "Yes. Purification does not depend on dividends. It is due if you owned the share at the end of the company's financial period, even with no dividend and even if the company made a loss. (AAOIFI Standard 21, clause 3/4/6/2)", "basis": "AAOIFI", "category": "Purification"}, {"id": "five_pct", "question": "Why is a stock with some interest income still halal?", "answer": "AAOIFI sets limits rather than demanding zero: prohibited income up to 5% of total income (clause 3/4/4), borrowing up to 30% of market cap (3/4/2), and interest-bearing deposits up to 30% (3/4/3). A company inside all the limits and with a permissible business passes, and the shareholder purifies their share of the prohibited income. (3/4/6)\n\nOther standard-setters use different limits, which is why scholars and screeners can disagree. Safr follows AAOIFI. Screening is informational, not a fatwa.", "basis": "AAOIFI", "category": "Basics"}, {"id": "stock_halal", "question": "How can a stock be halal?", "answer": "A stock represents a share in a company. It can pass the halal checks when its main business is permissible and its finances also pass.\n\nWe look at what the company does, its borrowing, money held in interest-bearing accounts, and income from prohibited sources. A prohibited business or financial figures above the screening limits means it does not pass.\n\nWhen figures are missing, Safr says that part is unverified. Passing the checks does not remove investment risk. Some income may still need purification.\n\nScreening is informational, not a fatwa.", "basis": "General", "category": "Basics"}, {"id": "halal_investing", "question": "What is halal investing?", "answer": "In general: it means investing in businesses and assets that fit Islamic principles. That avoids interest (riba), excessive uncertainty (gharar), gambling (maysir), and businesses such as alcohol, pork, conventional banking and gambling.\n\nSafr checks stocks against AAOIFI's screening rules and shows you the reason. Screening is informational, not a fatwa.", "basis": "General", "category": "Basics"}, {"id": "riba", "question": "What is riba?", "answer": "In general: riba is interest, or any guaranteed extra return charged on money lent. Islamic finance treats it as prohibited, so returns should come from real assets, trade or shared risk instead.\n\nThis is why Safr screens how much interest a company pays and earns. For a ruling on your situation, please ask a qualified scholar.", "basis": "General", "category": "Basics"}, {"id": "sukuk", "question": "What is a sukuk?", "answer": "In general: a sukuk is a certificate of ownership in an asset or project. Investors get a share of the returns the asset earns, not interest on a loan. That is why sukuk are the halal alternative to bonds.\n\nIn Safr's model mix, shorter goals lean more on sukuk. Specific sukuk are not screened in this prototype.", "basis": "General", "category": "Basics"}, {"id": "takaful", "question": "What is takaful, and how is it halal?", "answer": "In general: takaful is Islamic insurance. Here is how it works, step by step.\n\n1) You contribute. Members pay into a shared pool, treated as a gift to help each other.\n2) The pool pays claims. If a member suffers a covered loss, the claim is paid from the pool, not from the company's own money.\n3) The operator manages it. It runs the pool for a fee, and does not own the risk.\n4) The money is invested only in Shariah-compliant assets, with no interest.\n5) A Shariah board oversees the product. Any surplus can be shared back with members.\n\nWhy it is considered halal: conventional insurance is a sale of uncertainty for a premium and usually invests in interest. Takaful replaces that with shared responsibility and permissible investments.\n\nIn Safr's journey it is the protect step, before you invest. Safr has no partnership with any provider. For your own situation, please ask a qualified scholar.", "basis": "General", "category": "Basics"}, {"id": "zakat_amount", "question": "How much zakat do I give on my investments?", "basis": "General", "category": "Basics", "answer": "In general: the rate usually discussed is 2.5% of the value of your zakatable wealth, once your total is above the nisab (a minimum, based on 85 grams of gold) and you have held it for a lunar year.\n\nFor shares, scholars differ. A common view is that shares you hold to trade are valued at market price, so 2.5% of their value. Shares you hold long term for income are often treated differently, based on the company's zakatable assets. AAOIFI's zakah standard (No. 35) is written for Islamic financial institutions, not individuals, so it is only a guide.\n\nExample only: AED 100,000 of shares held to trade, with total wealth above the nisab and held for a lunar year, would be 2.5% = AED 2,500. Your own amount depends on your situation. Safr does not calculate your zakat. For your own amount, please ask a qualified scholar."}, {"id": "zakat", "question": "What is zakat on investments?", "answer": "In general: zakat is a yearly obligation on wealth above a minimum level (nisab), held for a lunar year. The rate usually discussed is 2.5%.\n\nFor shares, scholars treat it differently depending on whether you hold them to trade or to keep. AAOIFI's zakah standard (No. 35) is written for Islamic financial institutions, not individuals, so it is only a guide. Safr does not calculate your zakat. For your own amount, please ask a qualified scholar.", "basis": "General", "category": "Basics"}, {"id": "gold", "question": "Is gold halal to invest in?", "answer": "In general: gold is widely accepted as a store of value in Islamic finance, but how you buy it matters. Rules about delivery and settlement apply, and not every gold product is treated the same way.\n\nSafr's model mix includes gold as a category only. Specific gold products are not screened here. For a ruling on your situation, please ask a qualified scholar.", "basis": "General", "category": "Basics"}, {"id": "etf", "question": "What is a halal ETF?", "answer": "In general: an ETF is a basket of shares you buy as one. A halal-labelled ETF is run by an issuer that screens its holdings with a Shariah board's rules.\n\nSafr lists a few names for information (SPUS, HLAL, ISWD). They are halal-labelled by their issuers and not screened by Safr, so check each issuer's factsheet and Shariah board.", "basis": "General", "category": "Basics"}, {"id": "loan", "question": "Can I invest if I have a loan?", "answer": "This is a question about your own situation, so Safr can't rule on it. In general, scholars discuss both what kind of loan it is and your situation. Views can differ.\n\nFor a ruling on your situation, please ask a qualified scholar.", "basis": "Personal", "category": "Basics"}, {"id": "crypto", "question": "Is crypto halal?", "answer": "Scholars hold different views on crypto, and there is no single agreed answer. Safr does not screen crypto and gives no verdict on it. For a ruling on your situation, please ask a qualified scholar.", "basis": "Personal", "category": "Basics"}, {"id": "aaoifi", "question": "Why does Safr use AAOIFI?", "answer": "AAOIFI is an international standard-setter for Islamic finance. Safr uses its Shari'ah Standard No. 21 for stock screening and shows the clause behind each answer.\n\nOther bodies use different thresholds, so results can differ between screeners. Safr is a prototype using the 2015 edition. A real product would need the current edition and permission.", "basis": "General", "category": "Basics"}, {"id": "fatwa", "question": "Is Safr's answer a fatwa?", "answer": "No. Safr is an AI guide, not a scholar. Screening is informational, not a fatwa. For a ruling on your situation, please ask a qualified scholar.", "basis": "General", "category": "Basics"}, {"id": "recheck", "question": "What if a halal stock stops being halal later?", "answer": "A company's numbers change every year. Safr's data is a snapshot, and every figure carries its date. AAOIFI says to use the latest financial statements (Standard 21, clause 3/4/5), so a real product re-checks regularly. Check the date before you rely on a result.", "basis": "General", "category": "Basics"}, {"id": "interest", "question": "Is interest allowed?", "answer": "In general: no. Interest (riba) is prohibited in Islamic finance, so returns should come from real assets, trade or shared risk instead. This is why Safr checks how much interest a company pays and earns.", "basis": "General", "category": "Basics"}, {"id": "haram_business", "question": "Are alcohol, pork and gambling companies halal?", "answer": "No. A company whose core business is impermissible fails the first screening test, whatever its other numbers look like. (AAOIFI Standard 21, clause 3/4/1) Safr shows these as Not halal, for example Anheuser-Busch InBev. Screening is informational, not a fatwa.", "basis": "AAOIFI", "category": "Basics"}, {"id": "bank_stock", "question": "Is a conventional bank's stock halal?", "answer": "No. Conventional banking is built on interest, so it fails the business test. (AAOIFI Standard 21, clause 3/4/1) Safr shows JPMorgan and First Abu Dhabi Bank as Not halal. Screening is informational, not a fatwa.", "basis": "AAOIFI", "category": "Basics"}, {"id": "own_shares", "question": "Is it allowed to own shares in a halal company?", "answer": "In general: yes. Owning a share means owning part of a real business, and that is accepted when the business is permissible and passes the screening limits. Safr shows which stocks pass and why. Screening is informational, not a fatwa.", "basis": "General", "category": "Basics"}, {"id": "dividend_halal", "question": "Is a dividend from a halal company halal?", "answer": "If the company passes screening, yes, but a small part of its income may come from interest, so you give away that share. (AAOIFI Standard 21, clause 3/4/6) See \"How do you purify your investments?\" for the steps.", "basis": "AAOIFI", "category": "Purification"}, {"id": "gharar", "question": "What is gharar?", "answer": "In general: gharar is excessive uncertainty in a contract, where the terms, price or subject are so unclear that someone can be harmed or cheated. Islamic finance avoids it, which is why contracts must be clear about what is being bought and sold.", "basis": "General", "category": "Basics"}, {"id": "safr_money", "question": "Does Safr hold my money?", "answer": "No. Safr never holds your money and cannot place trades. It is a guide. In the real product, money would go from you to a regulated broker, never through Falahone or Safr.", "basis": "Safr", "category": "Safr"}, {"id": "safr_guarantee", "question": "Does Safr guarantee returns?", "answer": "No. The growth rate in the calculator is your own assumption, and the plans are illustrations, not predictions. Investments can go down as well as up.", "basis": "Safr", "category": "Safr"}, {"id": "safr_mix", "question": "What is a model mix, and why do short goals use more sukuk?", "answer": "A model mix is an example split between sukuk, gold and halal stocks for a goal. The shorter the goal, the more it leans on sukuk and gold, because stocks can fall in the short term. Longer goals can lean more on stocks. It is an illustration for this goal, not advice or a recommendation.", "basis": "Safr", "category": "Safr"}, {"id": "safr_licensed", "question": "Is Safr licensed?", "answer": "No. Safr is a prototype from Falahone, which is being built under ADGM. It is not a licensed financial service, and it is not a fatwa.", "basis": "Safr", "category": "Safr"}];
+// Safr core: screening, goal maths and mix. Used by the server (agent tools) and inlined into the page.
+function makeCore(D) {
+  var LIM = { debt: 0.30, cash: 0.30, inc: 0.05 };
+  var ALIASES = {
+    NVDA: ['nvidia'], AAPL: ['apple'], TSLA: ['tesla'], KO: ['coca-cola', 'coca cola', 'coke'],
+    T: ['at&t', 'att'], F: ['ford'], JPM: ['jpmorgan', 'jp morgan', 'jpmorgan chase', 'chase'],
+    BUD: ['anheuser-busch', 'anheuser busch', 'ab inbev', 'budweiser'], ADNOCGAS: ['adnoc gas', 'adnoc'],
+    SALIK: ['salik'], DIB: ['dubai islamic bank', 'dubai islamic', 'dib'],
+    DEWA: ['dewa', 'dubai electricity', 'dubai electricity & water'], EAND: ['e&', 'etisalat', 'eand'],
+    ALDAR: ['aldar', 'aldar properties'], FAB: ['first abu dhabi bank', 'first abu dhabi', 'fab']
+  };
+  var ETFS = [
+    { t: 'SPUS', n: 'SP Funds S&P 500 Sharia Industry Exclusions ETF', a: ['spus', 'sp funds'] },
+    { t: 'HLAL', n: 'Wahed FTSE USA Shariah ETF', a: ['hlal', 'wahed'] },
+    { t: 'ISWD', n: 'iShares MSCI World Islamic UCITS ETF', a: ['iswd', 'ishares islamic', 'msci world islamic'] }
+  ];
+  function p2(x) { return (Math.round(x * 10000) / 100).toFixed(2); }
+  function sgn(x) { return (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(1) + '%'; }
+  var stocks = D.stocks.map(function (s) {
+    var debt = s.total_debt_bn / s.market_cap_bn;
+    var cash = s.cash_st_investments_bn / s.market_cap_bn;
+    var inc = (s.non_compliant_income_m != null && s.revenue_m) ? s.non_compliant_income_m / s.revenue_m : null;
+    var verdict = s.expected_verdict;
+    var halal = /^Halal/.test(verdict);
+    var tests = [];
+    if (s.business_screen === 'Fail') {
+      tests.push({ k: 'biz', label: 'Core business', pass: false, text: s.business_note, clause: '3/4/1' });
+    } else if (s.business_screen === 'Islamic FI') {
+      tests.push({ k: 'biz', label: 'Core business', pass: true, text: 'Islamic financial institution. Interest-based ratio tests are not applied (Falahone methodology note).', clause: '' });
+    } else {
+      tests.push({ k: 'biz', label: 'Core business', pass: s.business_screen !== 'Review', text: s.business_screen === 'Review' ? 'Mixed business lines (' + s.business_note + ')' : 'Permissible core business', clause: '3/4/1' });
+      tests.push({ k: 'debt', label: 'Interest-based borrowing', value: debt, limit: LIM.debt, pass: debt <= LIM.debt, clause: '3/4/2', unit: 'of market cap' });
+      tests.push({ k: 'cash', label: 'Interest-bearing deposits', value: cash, limit: LIM.cash, pass: cash <= LIM.cash, clause: '3/4/3', unit: 'of market cap' });
+      tests.push({ k: 'inc', label: 'Prohibited income', value: inc, limit: LIM.inc, pass: inc == null ? true : inc <= LIM.inc, clause: '3/4/4', unit: 'of total income', unverified: inc == null });
+    }
+    var failing = tests.filter(function (t) { return !t.pass; });
+    var summary;
+    if (halal) summary = s.business_screen === 'Islamic FI' ? 'Islamic bank: passes, with the ratio tests not applied.' : 'Its main business is permissible, and its available financial figures pass the halal checks.';
+    else if (s.business_screen === 'Fail') summary = 'Fails the business test: ' + s.business_note.toLowerCase() + '.';
+    else summary = 'Fails on ' + failing.map(function (t) { return t.k === 'biz' ? 'business mix' : t.label.toLowerCase(); }).join(', ') + '.';
+    return {
+      t: s.ticker, n: s.company, market: s.market, cur: s.currency, biz: s.business, bs: s.business_screen,
+      note: s.business_note, verdict: verdict, halal: halal, unverified: /unverified/.test(verdict),
+      tests: tests, summary: summary, chg: s.price_change_12m_pct, chgDate: s.price_change_as_of,
+      incomeM: s.non_compliant_income_m, mcapBn: s.market_cap_bn,
+      aliases: (ALIASES[s.ticker] || []).concat([s.company.toLowerCase(), s.ticker.toLowerCase()])
+    };
+  });
+  function esc(x) { return x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+  // Find a stock inside a sentence (names only, short tickers must be the whole query)
+  function find(q) {
+    q = String(q || '').toLowerCase().trim();
+    if (!q) return null;
+    for (var i = 0; i < stocks.length; i++) if (q === stocks[i].t.toLowerCase()) return stocks[i];
+    for (var j = 0; j < stocks.length; j++) {
+      var s = stocks[j];
+      for (var k = 0; k < s.aliases.length; k++) {
+        var a = s.aliases[k];
+        if (a.length <= 3 && q !== a) continue;
+        if (new RegExp('(^|[^a-z0-9])' + esc(a) + '($|[^a-z0-9])').test(q)) return s;
+      }
+    }
+    return null;
+  }
+  function findEtf(q) {
+    q = String(q || '').toLowerCase().trim();
+    for (var i = 0; i < ETFS.length; i++) for (var k = 0; k < ETFS[i].a.length; k++) if (q.indexOf(ETFS[i].a[k]) !== -1) return ETFS[i];
+    return null;
+  }
+  function suggest(q) {
+    q = String(q || '').toLowerCase().trim();
+    if (!q) return [];
+    return stocks.filter(function (s) {
+      return s.aliases.some(function (a) { return a.indexOf(q) === 0 || (q.length > 1 && a.indexOf(q) !== -1); });
+    }).slice(0, 6);
+  }
+  function testLine(t) {
+    if (t.k === 'biz') return t.text.replace(' (Falahone methodology note).', '.');
+    if (t.unverified) return 'Interest income is not published, so this part of the check is unverified.';
+    var subject = t.k === 'debt' ? 'Borrowing' : t.k === 'cash' ? 'Interest-bearing deposits' : 'Income from prohibited sources';
+    return subject + (t.k === 'cash' ? ' are ' : ' is ') + (t.pass ? 'within the screening limit.' : 'above the screening limit.');
+  }
+  function perfLine(s) { return sgn(s.chg) + ' over 12 months (price only), as of ' + s.chgDate + '.'; }
+  function stockText(s) {
+    var head = s.n + ' (' + s.t + '): ' + (s.halal ? 'Halal' : 'Not halal') + (s.unverified ? ', income unverified' : '') + '. ' + s.summary;
+    return head + '\n\n' + s.tests.map(testLine).join('\n') + '\n\n' + perfLine(s) + '\n\nScreening is informational, not a fatwa.';
+  }
+  function mixFor(y) {
+    if (y < 3) return { sukuk: 65, gold: 25, stocks: 10 };
+    if (y < 5) return { sukuk: 50, gold: 20, stocks: 30 };
+    if (y < 7) return { sukuk: 35, gold: 15, stocks: 50 };
+    return { sukuk: 20, gold: 10, stocks: 70 };
+  }
+  function calc(goal, years, ratePct) {
+    var n = Math.round(years * 12), i = ratePct / 100 / 12, m;
+    if (n <= 0) return { monthly: 0, invest: 0, growth: 0 };
+    m = i === 0 ? goal / n : goal * i / (Math.pow(1 + i, n) - 1);
+    return { monthly: m, invest: m * n, growth: goal - m * n };
+  }
+  function aed(x) { return 'AED ' + Math.round(x).toLocaleString('en-US'); }
+  return { stocks: stocks, ETFS: ETFS, LIM: LIM, find: find, findEtf: findEtf, suggest: suggest, stockText: stockText, testLine: testLine, perfLine: perfLine, mixFor: mixFor, calc: calc, aed: aed, p2: p2, sgn: sgn };
+}
+if (typeof module !== 'undefined') module.exports = makeCore;
+
+// Stored copy is authoritative. Matching never asks an AI to rewrite an answer.
+const normalize=value=>String(value||'').toLowerCase().replace(/[’']/g,'').replace(/[^\p{L}\p{N}%]+/gu,' ').trim();
+function answerTag(basis){return ['AAOIFI','General','Personal'].includes(basis)?basis:'General';}
+function matchQAPack(question,pack){
+ const q=normalize(question);if(!q)return null;
+ const byId=id=>pack.find(entry=>entry.id===id)||null;
+ const exact=pack.find(entry=>normalize(entry.question)===q);if(exact&&exact.id!=='zakat_amount')return exact;
+ const purification=/\bpurif\w*\b/.test(q),zakat=/\b(zakat|zakah|zakaat)\b/.test(q);
+ const personalAmount=/\b(calculate|compute|owe|amount|how much|my|mine|i own|i hold)\b/.test(q)||/\d/.test(q);
+ // Personal amounts never use the worked-example answers or calculate a sum.
+ if((purification||zakat)&&personalAmount)return byId(zakat?'zakat':'purify_who');
+ if(purification){
+  if(/\b(example|illustration|tesla|nvidia|coca cola)\b/.test(q))return byId('purify_example');
+  if(/\b(where|charity|tax|taxes)\b/.test(q))return byId('purify_where');
+  if(/\b(dividend|dividends)\b/.test(q))return byId('dividend_purify');
+  if(/\b(who|when|period|sold)\b/.test(q))return byId('purify_who');
+  return byId('purify');
+ }
+ if(zakat)return byId('zakat');
+ if(/how can (a |an )?(stock|share) be halal|what makes (a |an )?(stock|share|company) halal|halal (criteria|rules|screening)/.test(q))return byId('stock_halal');
+ const keywords=[['riba','riba'],['takaful','takaful'],['gold','gold'],['etf','etf'],['etfs','etf'],['fatwa','fatwa'],['aaoifi','aaoifi'],['gharar','gharar'],['crypto','crypto']];
+ for(const [word,id]of keywords)if(q.split(' ').includes(word))return byId(id);
+ if(/\bsukuk\b/.test(q))return byId(/\b(mix|short|shorter|goals)\b/.test(q)?'safr_mix':'sukuk');
+ if(/\b(licensed|licence|license|licensing)\b/.test(q)&&/\b(safr|falahone)\b/.test(q))return byId('safr_licensed');
+ if(/\b(safr|falahone)\b/.test(q)&&/\b(hold|holds|collect|custody)\b/.test(q))return byId('safr_money');
+ if(/\b(guarantee|guarantees|guaranteed)\b/.test(q)&&/\b(safr|returns|growth)\b/.test(q))return byId('safr_guarantee');
+ return null;
+}
+
+var C = makeCore(DATA);
+</script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
+  function esc(x) { return String(x).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function html(t) { return esc(t).replace(/\n/g, '<br>'); }
+
+  /* ---------- state ---------- */
+  var PRESETS = [
+    { id: 'freedom', name: 'Financial freedom', amount: 1000000, years: 20, rate: 7, line: 'A long goal. Small steps, started early.' },
+    { id: 'hajj', name: 'Hajj', amount: 35000, years: 3, rate: 4, line: 'A goal with a date. Short goals lean on steadier assets.' },
+    { id: 'home', name: 'Home deposit', amount: 100000, years: 5, rate: 6, line: 'A middle-length goal. A bit of everything.' },
+    { id: 'family', name: 'Family back home', amount: 60000, years: 2, rate: 3, line: 'Short and steady, so the mix leans on sukuk.' },
+    { id: 'cushion', name: 'A safety cushion', amount: 30000, years: 1, rate: 2, line: 'The first thing to build. Keep it simple.' },
+    { id: 'future', name: 'My future', amount: 500000, years: 15, rate: 7, line: 'Time is the biggest helper here.' }
+  ];
+  var STEPS = [
+    { id: 'you', name: 'About you' }, { id: 'protect', name: 'Protect yourself' }, { id: 'goal', name: 'Set your goal' }, { id: 'mix', name: 'Your mix' },
+    { id: 'portfolio', name: 'Build your portfolio' }, { id: 'explore', name: 'Check any asset' }, { id: 'uae', name: 'Build it in the UAE' }, { id: 'review', name: 'Review your journey' }
+  ];
+  var S, TABKEY = 'stocks';
+  function fresh() { return { view: 'home', step: null, name: '', age: null, goal: 'Home deposit', amount: 100000, years: 5, rate: 6, portfolio: [], done: {}, tab: 'stocks', hist: [], started: false, q: '', picked: null }; }
+  S = fresh();
+
+  /* ---------- theme ---------- */
+  function setTheme(t) { try { document.documentElement.setAttribute('data-theme', t); localStorage.setItem('safr-theme', t); } catch (e) {} }
+  var st = null; try { st = localStorage.getItem('safr-theme'); } catch (e) {}
+  document.documentElement.setAttribute('data-theme', st || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light'));
+  $$('button[data-theme]').forEach(function (b) { b.addEventListener('click', function () {
+    var cur = document.documentElement.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    setTheme(cur === 'dark' ? 'light' : 'dark'); }); });
+
+  /* ---------- loader ---------- */
+  var loader = $('#loader'), reduce = matchMedia('(prefers-reduced-motion:reduce)').matches, ldDone = false;
+  function finishLoader() { loader.style.display = 'none'; $('#hero').classList.add('ready'); }
+  function endLoader() { if (ldDone) return; ldDone = true; loader.classList.add('done'); setTimeout(function () { loader.classList.add('out'); $('#hero').classList.add('ready'); setTimeout(function () { finishLoader(); }, 650); }, 1200); }
+  (function runLoader() {
+    if (reduce) { ldDone = true; loader.classList.add('done'); setTimeout(function () { finishLoader(); }, 1000); return; }
+    var bar = $('#ldbar'), pct = $('#ldpct'), t0 = Date.now(), D = 2200;
+    (function tick() {
+      var p = Math.min(1, (Date.now() - t0) / D); p = 1 - Math.pow(1 - p, 2);
+      bar.style.width = (p * 100) + '%'; pct.textContent = Math.round(p * 100) + '%';
+      if (p < 1 && !ldDone) requestAnimationFrame(tick); else endLoader();
+    })();
+  })();
+  ['click', 'keydown', 'touchstart'].forEach(function (e) { loader.addEventListener(e, function () { ldDone = true; finishLoader(); }); });
+  document.addEventListener('keydown', function () { ldDone = true; finishLoader(); });
+
+  /* ---------- navigation ---------- */
+  var hero = $('#hero'), app = $('#app'), chat = $('#chat'), thread = $('#thread');
+  var heroTimer = null, activeTransition = null, navigationToken = 0;
+  var motionEase = 'cubic-bezier(.22,1,.36,1)';
+  function transitionPage(update) {
+    var token = ++navigationToken;
+    if (activeTransition) activeTransition.skipTransition();
+    if (reduce || !document.startViewTransition || hero.style.display !== 'none') { update(); return; }
+    var transition;
+    try { transition = document.startViewTransition(function () { if (token === navigationToken) update(); }); }
+    catch (error) { activeTransition = null; update(); return; }
+    activeTransition = transition;
+    transition.finished.catch(function () {}).then(function () { if (activeTransition === transition) activeTransition = null; });
+  }
+  function animateView(element) {
+    if (reduce || activeTransition || !element || !element.animate) return;
+    if (element._safrMotion) element._safrMotion.cancel();
+    element._safrMotion = element.animate(
+      [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }],
+      { duration: 480, easing: motionEase }
+    );
+  }
+  function revealApp() {
+    clearTimeout(heroTimer); app.classList.add('on');
+    if (hero.style.display !== 'none') {
+      hero.classList.add('leaving');
+      heroTimer = setTimeout(function () { hero.style.display = 'none'; }, reduce ? 0 : 560);
+      // The hero fades over the new page; avoid multiplying two entry fades.
+    }
+  }
+  function enter(go) {
+    revealApp();
+    if (go) goStep(go); else goHome();
+  }
+  $$('[data-enter]').forEach(function (b) { b.addEventListener('click', function () { enter(); }); });
+  $$('[data-ask]').forEach(function (b) { b.addEventListener('click', function () { enter(); setTimeout(function () { $('#q').focus(); }, 50); }); });
+  $$('[data-go]').forEach(function (b) { b.addEventListener('click', function () { enter(b.getAttribute('data-go')); }); });
+  $('#toHero').addEventListener('click', function () { ++navigationToken; if (activeTransition) activeTransition.skipTransition(); clearTimeout(heroTimer); closeDrawer(); hero.style.display = ''; hero.classList.remove('leaving'); hero.classList.add('ready'); app.classList.remove('on'); animateView($('.hmain')); });
+  $('#menu').addEventListener('click', function () { $('#side').classList.toggle('open'); });
+  $('#homeBtn').addEventListener('click', goHome);
+  $('#newj').addEventListener('click', function () { generation++; if (pending) pending.abort(); pending = null; busy = false; S = fresh(); thread.innerHTML = '<div class="cw greet"><div class="k">Salaam.</div><h2>How can I help build your journey?</h2></div>'; chat.classList.add('empty'); renderSteps(); goHome(); });
+  $('#fab').addEventListener('click', openDrawer);
+  $('#dclose').addEventListener('click', closeDrawer);
+  function openDrawer() { ensureStarted(); mount('drawer'); $('#drawer').classList.add('open'); setTimeout(function () { if ($('#drawer').classList.contains('open')) $('#q').focus(); }, 420); }
+  function closeDrawer() { $('#drawer').classList.remove('open'); }
+  function mount(where) {
+    var host = where === 'drawer' ? $('#dbody') : $('#homeSlot');
+    if (chat.parentNode !== host) host.appendChild(chat);
+  }
+  function ensureStarted() {
+    if (S.started) return;
+    S.started = true; chat.classList.remove('empty');
+    thread.innerHTML = '';
+    bot('Salaam. I\'m Safr, your guide for the journey. Tell me what you\'re saving for, and I\'ll help you build a halal plan, one step at a time.', { chips: [['Help me build my journey', 'setup'], ['Is this stock halal?', 'stock'], ['How do I purify my investments?', 'qa:purify']] });
+  }
+  function goHome() { transitionPage(showHome); }
+  function showHome() {
+    S.view = 'home'; S.step = null; document.body.setAttribute('data-view', 'home');
+    $('#stage').hidden = true; $('#homeSlot').style.display = 'flex'; mount('home'); closeDrawer();
+    $('#topT').textContent = 'Ask Safr'; renderSteps(); $('#side').classList.remove('open'); animateView($('#homeSlot'));
+  }
+  function goStep(id) { transitionPage(function () { showStep(id); }); }
+  function showStep(id) {
+    if (id === 'review') STEPS.forEach(function (step) { S.done[step.id] = true; });
+    S.view = 'step'; S.step = id; document.body.setAttribute('data-view', 'step');
+    $('#homeSlot').style.display = 'none'; var st = $('#stage'); st.hidden = false; st.scrollTop = 0;
+    mount('drawer'); closeDrawer();
+    var meta = STEPS.filter(function (s) { return s.id === id; })[0] || { name: id };
+    $('#topT').textContent = meta.name; renderSteps(); render(id); $('#side').classList.remove('open'); animateView($('#stage .wrap'));
+  }
+  function next(id) { S.done[id] = true; var i = STEPS.map(function (s) { return s.id; }).indexOf(id); if (i < STEPS.length - 1) goStep(STEPS[i + 1].id); else { renderSteps(); render(id); } }
+  function renderSteps() {
+    $('#steps').innerHTML = STEPS.map(function (s, i) {
+      return '<button class="step' + (S.step === s.id ? ' on' : '') + (S.done[s.id] ? ' done' : '') + '" data-step="' + s.id + '"><span class="n">' + (S.done[s.id] ? '✓' : (i + 1)) + '</span>' + s.name + '</button>';
+    }).join('');
+    $$('#steps .step').forEach(function (b) { b.addEventListener('click', function () { goStep(b.getAttribute('data-step')); }); });
+  }
+
+  /* ---------- helpers ---------- */
+  var mixColors = { sukuk: '#0E2945', gold: '#8F5F05', stocks: '#003D06' };
+  function guide(t) { return '<div class="guide"><span class="ring"></span><p>' + t + '</p></div>'; }
+  function foot() { return '<p class="note">This is information, not advice.</p>'; }
+  function stockShare() { return C.mixFor(S.years).stocks; }
+  function usedW() { return S.portfolio.reduce(function (a, p) { return a + p.w; }, 0); }
+  function planLine() { var r = C.calc(S.amount, S.years, S.rate); return r; }
+
+  /* ---------- step renderers ---------- */
+  function render(id) {
+    var st = $('#stage'), h = '';
+    if (id === 'you') h = vYou();
+    else if (id === 'protect') h = vProtect();
+    else if (id === 'goal') h = vGoal();
+    else if (id === 'mix') h = vMix();
+    else if (id === 'portfolio') h = vPortfolio();
+    else if (id === 'explore') h = vExplore();
+    else if (id === 'uae') h = vUae();
+    else if (id === 'review') h = vReview();
+    st.innerHTML = '<div class="wrap">' + h + '</div>';
+    bind(id);
+  }
+  function hi() { return S.name ? 'Thanks, ' + esc(S.name) + '. ' : ''; }
+  function vYou() {
+    return guide('Salaam. I\'m Safr. Before we start, what should I call you, and how old are you?') +
+      '<div class="eyebrow">Step 1</div><h2 class="h">About you</h2>' +
+      '<form class="form" id="you" novalidate style="max-width:480px;margin-top:10px"><label class="lab" style="padding:0 0 6px" for="nm">Your first name</label><input id="nm" maxlength="40" placeholder="For example Omar" autocomplete="off" value="' + esc(S.name) + '">' +
+      '<label class="lab" style="padding:6px 0" for="ag">Your age</label><input id="ag" type="number" inputmode="numeric" min="18" max="90" placeholder="For example 30" value="' + (S.age || '') + '">' +
+      '<p class="note" id="youMsg" style="margin:0 0 12px">Your age helps Safr show where your goal lands. It stays on this screen and is not saved.</p>' +
+      '<div class="row"><button class="btn p" type="submit">Continue</button><button class="btn g" type="button" id="skipYou">Skip for now</button></div></form>';
+  }
+  function vProtect() {
+    return guide(hi() + 'Before you invest, it helps to be protected. Two things come first: a small cushion, and takaful.') +
+      '<div class="eyebrow">Step 2</div><h2 class="h">Protect yourself</h2>' +
+      '<div class="cards">' +
+      '<div class="card"><h3>A safety cushion</h3><p>A common rule of thumb is to keep three to six months of living costs set aside before you invest for the long term. It is a rule of thumb, not advice, and your own situation may differ.</p><span class="tagc">Rule of thumb</span></div>' +
+      '<div class="card"><h3>Takaful</h3><p>Takaful is Shariah-based insurance. Members put money into a shared pool, and the pool pays claims. It replaces buying a conventional insurance contract.</p>' +
+      '<div class="row"><a class="btn s" href="https://salama.ae/" target="_blank" rel="noopener">Salama</a><a class="btn s" href="https://www.centralbank.ae/en/our-operations/islamic-finance/takaful-insurance/" target="_blank" rel="noopener">Central Bank takaful page</a></div>' +
+      '<p class="note">Takaful information in the UAE. Safr has no partnership with these providers and does not rank them.</p></div></div>' +
+      '<div class="row"><button class="btn p" id="covered">I\'m covered, set my goal</button><button class="btn s" id="moreTk">Tell me more about takaful</button><button class="btn g" id="skip">Skip for now</button></div>';
+  }
+  function vGoal() {
+    var r = planLine(), pr = PRESETS.filter(function (p) { return p.name === S.goal; })[0];
+    return guide('What are you saving for? Pick one, then move the sliders. Everything updates as you go.') +
+      '<div class="eyebrow">Step 3</div><h2 class="h">Set your goal</h2>' +
+      '<div style="margin:12px 0 4px">' + PRESETS.map(function (p) { return '<button class="chip' + (S.goal === p.name ? ' on' : '') + '" data-preset="' + p.id + '">' + p.name + '</button>'; }).join('') + '</div>' +
+      (pr ? '<p class="note" style="margin-top:0">' + esc(pr.line) + '</p>' : '') +
+      '<div class="sl"><label>How much to reach <b class="num" id="vA">' + C.aed(S.amount) + '</b></label><input type="range" id="rA" min="5000" max="2000000" step="5000" value="' + S.amount + '"></div>' +
+      '<div class="sl"><label>Years you have <b class="num" id="vY">' + S.years + '</b></label><input type="range" id="rY" min="1" max="30" step="1" value="' + S.years + '"></div>' +
+      '<div class="sl"><label>Yearly growth you assume <b class="num" id="vR">' + S.rate + '%</b></label><input type="range" id="rR" min="0" max="12" step="0.5" value="' + S.rate + '"></div>' +
+      '<div class="res" id="res">' + resHtml(r) + '</div>' +
+      (S.age ? '<p class="note" id="ageLine">' + ageLine() + '</p>' : '') +
+      '<p class="note">The growth rate is your own assumption, not a promise. These are illustrations, not predictions.</p>' +
+      '<div class="row" style="margin-top:14px"><button class="btn p" id="nx">See my mix →</button></div>';
+  }
+  function ageLine() { return (S.name ? S.name + ', in ' : 'In ') + S.years + ' year' + (S.years === 1 ? '' : 's') + ' you would be ' + (S.age + S.years) + '.'; }
+  function resHtml(r) {
+    return '<div class="eyebrow">You would put in about</div><div class="big num">' + C.aed(r.monthly) + ' <span style="font-size:.4em;font-weight:500;letter-spacing:.05em">a month</span></div>' +
+      '<div class="gr"><div><span>You invest</span><b class="num">' + C.aed(r.invest) + '</b></div><div><span>Growth adds</span><b class="num">' + C.aed(r.growth) + '</b></div><div><span>Goal</span><b class="num">' + C.aed(S.amount) + '</b></div></div>';
+  }
+  function vMix() {
+    var m = C.mixFor(S.years);
+    return guide('Here is a model mix for a goal ' + S.years + ' year' + (S.years === 1 ? '' : 's') + ' away. The shorter the goal, the more it leans on steadier assets.') +
+      '<div class="eyebrow">Step 4</div><h2 class="h">Your mix</h2>' +
+      '<div class="mixbar" role="img" aria-label="Sukuk ' + m.sukuk + ' percent, gold ' + m.gold + ' percent, halal stocks ' + m.stocks + ' percent">' +
+      ['sukuk', 'gold', 'stocks'].map(function (k) { return '<div style="width:' + m[k] + '%;background:' + mixColors[k] + '">' + m[k] + '%</div>'; }).join('') + '</div>' +
+      '<div class="legend"><span><i style="background:' + mixColors.sukuk + '"></i>Sukuk</span><span><i style="background:' + mixColors.gold + '"></i>Gold</span><span><i style="background:' + mixColors.stocks + '"></i>Halal stocks</span></div>' +
+      '<div class="cards" style="margin-top:20px">' +
+      '<div class="card"><h3>Sukuk ' + m.sukuk + '%</h3><p>Certificates of ownership in an asset. Returns come from the asset, not from interest.</p></div>' +
+      '<div class="card"><h3>Gold ' + m.gold + '%</h3><p>A physical asset people hold to spread risk.</p></div>' +
+      '<div class="card"><h3>Halal stocks ' + m.stocks + '%</h3><p>Shares in companies that pass the halal checks. You choose them in the next step.</p></div></div>' +
+      '<p class="note">A model mix is an illustration for this goal length, not advice. You decide.</p>' +
+      '<div class="row" style="margin-top:14px"><button class="btn p" id="nx">Build my portfolio →</button><button class="btn s" id="ex">Why this mix?</button></div>';
+  }
+  function vPortfolio() {
+    var cap = stockShare(), used = usedW(), left = cap - used, m = C.mixFor(S.years);
+    var h = guide('Search any stock. I will tell you if it is halal and why. If I have not screened it, I will say so rather than guess.') +
+      '<div class="eyebrow">Step 5</div><h2 class="h">Build your portfolio</h2>' +
+      '<form class="sbox" id="sf" autocomplete="off"><input id="sq" placeholder="Search a stock, for example Tesla" value="' + esc(S.q) + '" aria-label="Search a stock"><button class="btn p" type="submit">Check</button></form>' +
+      '<div id="sug"></div><div id="verdict">' + (S.picked ? verdictHtml(S.picked) : '') + '</div>' +
+      '<div class="pf"><div class="eyebrow">Your plan</div>' +
+      '<div class="split" role="img" aria-label="Portfolio split"><i style="width:' + m.sukuk + '%;background:' + mixColors.sukuk + '"></i><i style="width:' + m.gold + '%;background:' + mixColors.gold + '"></i>' +
+      S.portfolio.map(function (p, i) { return '<i style="width:' + p.w + '%;background:' + ['#003D06', '#66722E', '#4FBF6A', '#472F00', '#651B1E'][i % 5] + '"></i>'; }).join('') + '</div>' +
+      '<div class="legend"><span><i style="background:' + mixColors.sukuk + '"></i>Sukuk ' + m.sukuk + '%</span><span><i style="background:' + mixColors.gold + '"></i>Gold ' + m.gold + '%</span><span><i style="background:' + mixColors.stocks + '"></i>Stocks you chose ' + used + '% of ' + cap + '%</span></div>';
+    h += S.portfolio.length ? S.portfolio.map(function (p) {
+      var s = C.stocks.filter(function (x) { return x.t === p.t; })[0];
+      return '<div class="prow"><div><b>' + esc(s ? s.n : p.t) + '</b> <span class="tagc">Halal</span></div><button class="rm" data-rm="' + p.t + '">Remove</button>' +
+        '<div class="w"><input type="range" min="1" max="' + cap + '" value="' + p.w + '" data-w="' + p.t + '" aria-label="Weight for ' + esc(p.t) + '"><b class="num">' + p.w + '%</b></div></div>';
+    }).join('') : '<p class="note">No stocks yet. The sukuk and gold shares stay as the model mix shows.</p>';
+    h += '<p class="note">Weights are shares of the whole plan. You have ' + left + '% of the stock share left.</p></div>' +
+      '<div class="row" style="margin-top:14px"><button class="btn p" id="nx">Check any asset →</button></div>';
+    return h;
+  }
+  function verdictHtml(s, info) {
+    var cap = stockShare(), left = cap - usedW(), has = S.portfolio.some(function (p) { return p.t === s.t; });
+    return '<div class="card" style="margin-top:14px"><div class="row" style="margin:0 0 8px;align-items:center"><h3 style="margin:0">' + esc(s.n) + ' <span class="num" style="color:var(--dim);font-weight:500">' + esc(s.t) + '</span></h3><span class="vp ' + (s.halal ? 'y' : 'n') + '">' + (s.halal ? 'Halal' : 'Not halal') + (s.unverified ? ', income unverified' : '') + '</span></div>' +
+      '<p style="color:var(--text)">' + esc(s.summary) + '</p>' +
+      '<div class="tests">' + s.tests.map(function (t) { return '<div><span class="m ' + (t.pass ? 'ok' : 'no') + '">' + (t.pass ? '✓' : '✕') + '</span><span>' + esc(C.testLine(t)) + '</span></div>'; }).join('') + '</div>' +
+      '<p class="note" style="margin-top:0">' + esc(C.perfLine(s)) + '</p>' +
+      '<p class="note">Screening is informational, not a fatwa.</p>' +
+      '<div class="row">' + (info ? '' : s.halal ? (has ? '<span class="tagc">In your plan</span>' : (left > 0 ? '<button class="btn p" data-add="' + s.t + '">Add to my plan</button>' : '<span class="tagc">No room left in the stock share</span>')) : '<span class="tagc">Can\'t be added</span>') + '</div></div>';
+  }
+  function vExplore() {
+    var uae = ['ADNOCGAS', 'SALIK', 'DIB', 'DEWA', 'EAND', 'ALDAR', 'FAB'];
+    return guide('Search any stock, ETF or ticker. I will tell you if it is halal or not, and why.') + '<div class="eyebrow">Step 6</div><h2 class="h">Check any asset</h2>' +
+      '<form class="sbox" id="xf" autocomplete="off"><input id="xq" placeholder="Search an asset or ticker, for example DEWA or TSLA" value="' + esc(S.xq || '') + '" aria-label="Search an asset or ticker"><button class="btn p" type="submit">Check</button></form>' +
+      '<div id="xsug"></div>' +
+      '<div style="margin:14px 0 4px"><span class="lab" style="padding:0 10px 0 0">UAE examples</span>' + uae.map(function (k) { var s = C.stocks.filter(function (x) { return x.t === k; })[0]; return s ? '<button class="chip" data-x="' + k + '">' + esc(s.n) + '</button>' : ''; }).join('') + '</div>' +
+      '<div id="xres">' + (S.xr || '') + '</div>' + foot() +
+      '<div class="row" style="margin-top:14px"><button class="btn p" id="nx">Build it in the UAE →</button></div>';
+  }
+  function resultFor(v) {
+    var l = String(v).toLowerCase().trim(), s = C.find(l) || C.find(l.toUpperCase());
+    if (s) return verdictHtml(s, true);
+    var e = C.findEtf(l);
+    if (e) return '<div class="card" style="margin-top:14px"><h3>' + esc(e.n) + '</h3><span class="vp u">Not screened by Safr</span><p style="margin-top:10px">Halal-labelled by its issuer. Not screened by Safr, so there is no verdict here. Check the issuer\'s factsheet and Shariah board.</p></div>';
+    if (/sukuk/.test(l)) return '<div class="card" style="margin-top:14px"><h3>Sukuk</h3><span class="vp u">Not screened by Safr</span><p style="margin-top:10px">A sukuk is a certificate of ownership in an asset, so returns come from the asset, not from interest. Specific sukuk are not screened in this prototype.</p></div>';
+    return '<div class="card" style="margin-top:14px"><h3>' + esc(v) + '</h3><span class="vp u">Not screened yet</span><p style="margin-top:10px">Safr hasn\'t screened this yet. It only gives a verdict for assets it has checked against the data, and it won\'t guess.</p><div class="row"><button class="btn s" id="reqS">Request screening</button></div><p class="note" id="reqM"></p></div>';
+  }
+  var PLATFORMS = [
+    { n: 'Cusp Wealth', logo: 'cusp', d: 'An investing app in the UAE with Shariah portfolios and US stocks.', u: 'https://cuspwealth.com/' },
+    { n: 'Sarwa', logo: 'sarwa', d: 'A UAE investing platform for portfolios, stocks and saving.', u: 'https://www.sarwa.co/' },
+    { n: 'Tabadulat', logo: 'tabadulat', d: 'A halal investing app for Shariah-screened stocks and ETFs.', u: 'https://tabadulat.com/' },
+    { n: 'Wahed', logo: 'wahed', d: 'A halal investing platform with a UAE site.', u: 'https://www.wahed.com/uae/investing' }
+  ];
+  function vUae() {
+    return '<div class="eyebrow">Step 7</div><h2 class="h">Ready to act? Here is where this happens in the UAE.</h2>' +
+      '<p style="margin:6px 0 18px;color:var(--dim)">Safr is a guide. To invest, you use a broker or provider that is regulated where you live.</p>' +
+      '<div class="eyebrow">Where people do this today</div><div class="cards">' +
+      '<div class="card"><h3>Stocks and ETFs</h3><p>A licensed UAE or international broker that offers the market you want.</p></div>' +
+      '<div class="card"><h3>Sukuk</h3><p>Through a licensed broker or bank that offers sukuk.</p></div>' +
+      '<div class="card"><h3>Takaful</h3><p>Read about it on the Central Bank page, or look at Salama.</p><div class="row"><a class="btn s" href="https://www.centralbank.ae/en/our-operations/islamic-finance/takaful-insurance/" target="_blank" rel="noopener">Central Bank</a><a class="btn s" href="https://salama.ae/" target="_blank" rel="noopener">Salama</a></div></div></div>' +
+      '<div class="eyebrow" style="margin-top:22px">Platforms people look at in the UAE</div>' +
+      '<div class="cards">' + PLATFORMS.map(function (x) { return '<div class="card provider-card"><div class="provider-logo '+x.logo+'"><img src="/logos/'+x.logo+'.svg" alt="'+esc(x.n)+' logo" width="180" height="40"></div><h3>' + x.n + '</h3><p>' + x.d + '</p><a class="btn s" href="' + x.u + '" target="_blank" rel="noopener">Visit ' + x.n + '</a></div>'; }).join('') + '</div>' +
+      '<p class="note" style="margin-top:-8px">Listed alphabetically, not ranked. Safr has no partnership with, and is not paid by, any of them. Safr has not screened or approved these providers. Check each one\'s licence, fees and Shariah approval yourself before you decide.</p>' +
+      foot() + '<div class="row" style="margin-top:14px"><button class="btn p" id="nx">Review my journey →</button></div>';
+  }
+
+  function vReview() {
+    var r = planLine(), m = C.mixFor(S.years), used = usedW(), who = S.name ? esc(S.name) : 'you';
+    function row(k, v, step) { return '<div class="rv"><div><span class="rk">' + k + '</span><div class="rvv">' + v + '</div></div><button class="rm" data-edit="' + step + '">Change</button></div>'; }
+    var stocks = S.portfolio.length ? S.portfolio.map(function (p) { var s = C.stocks.filter(function (x) { return x.t === p.t; })[0]; return esc(s ? s.n : p.t) + ' ' + p.w + '%'; }).join(', ') + ' (Halal, screened by Safr)' : 'No stocks chosen yet. The mix above stays as the model.';
+    return guide('Here is your journey in one place, ' + who + '. You can change any part.') +
+      '<div class="eyebrow">Step 8</div><h2 class="h">Review your journey</h2>' +
+      '<div class="card" style="padding:6px 22px">' +
+      row('About you', S.name || S.age ? (S.name ? esc(S.name) : 'No name given') + (S.age ? ', ' + S.age : '') : 'Skipped', 'you') +
+      row('Protection', S.cov === 'covered' ? 'You said you are covered: a safety cushion and takaful.' : (S.cov === 'skipped' ? 'Skipped for now. Takaful and a safety cushion are worth a look before you invest.' : 'Not looked at yet.'), 'protect') +
+      row('Your goal', esc(S.goal) + ': ' + C.aed(S.amount) + ' in ' + S.years + ' year' + (S.years === 1 ? '' : 's') + ', with ' + S.rate + '% yearly growth assumed' + (S.age ? '. You would be ' + (S.age + S.years) + '.' : '.'), 'goal') +
+      row('Monthly amount', '<b class="num">' + C.aed(r.monthly) + ' a month</b>. You invest ' + C.aed(r.invest) + ', growth adds ' + C.aed(r.growth) + '.', 'goal') +
+      row('Your mix', 'Sukuk ' + m.sukuk + '%, gold ' + m.gold + '%, halal stocks ' + m.stocks + '%.<div class="mixbar" style="height:30px;font-size:12px;margin:10px 0 2px">' + ['sukuk', 'gold', 'stocks'].map(function (k) { return '<div style="width:' + m[k] + '%;background:' + mixColors[k] + '">' + m[k] + '%</div>'; }).join('') + '</div>', 'mix') +
+      row('Your stocks', stocks, 'portfolio') + '</div>' +
+      '<div class="eyebrow" style="margin-top:22px">Next steps</div><div class="cards">' +
+      '<div class="card"><h3>1. Protect</h3><p>Look at takaful and set aside a safety cushion before you invest.</p></div>' +
+      '<div class="card"><h3>2. Choose where</h3><p>Pick a licensed provider that offers the markets you want. Check its licence, fees and Shariah approval.</p></div>' +
+      '<div class="card"><h3>3. Start small</h3><p>Begin with the monthly amount you worked out and review it as your life changes.</p></div></div>' +
+      '<p class="note">Illustrations, not predictions. The growth rate is your own assumption. This is information, not advice. Nothing here is saved.</p>' +
+      '<div class="row" style="margin-top:14px"><button class="btn p" id="again">Start a new journey</button><button class="btn s" id="askme">Ask Safr about my plan</button></div>';
+  }
+
+  /* ---------- bindings per step ---------- */
+  function bind(id) {
+    var st = $('#stage');
+    var nx = $('#nx', st); if (nx) nx.addEventListener('click', function () { next(id); });
+    if (id === 'you') {
+      $('#skipYou').addEventListener('click', function () { next('you'); });
+      $('#you').addEventListener('submit', function (e) {
+        e.preventDefault();
+        var nm = $('#nm').value.trim().replace(/[<>]/g, ''), ag = parseInt($('#ag').value, 10), msg = $('#youMsg');
+        if (!nm) { msg.textContent = 'Please tell me what to call you, or tap Skip for now.'; $('#nm').focus(); return; }
+        if (!(ag >= 18) || !Number.isInteger(ag)) { msg.textContent = 'Safr is for people 18 and over. Please enter your age, or tap Skip for now.'; $('#ag').focus(); return; }
+        if (ag > 90) { msg.textContent = 'Please enter an age up to 90.'; return; }
+        S.name = nm; S.age = ag; next('you');
+      });
+    }
+    if (id === 'protect') {
+      $('#covered').addEventListener('click', function () { S.cov = 'covered'; next('protect'); });
+      $('#skip').addEventListener('click', function () { S.cov = 'skipped'; goStep('goal'); });
+      $('#moreTk').addEventListener('click', function () { openDrawer(); ask('What is takaful, and how is it halal?'); });
+    }
+    if (id === 'goal') {
+      $$('[data-preset]', st).forEach(function (b) { b.addEventListener('click', function () {
+        var p = PRESETS.filter(function (x) { return x.id === b.getAttribute('data-preset'); })[0];
+        S.goal = p.name; S.amount = p.amount; S.years = p.years; S.rate = p.rate; capPortfolio(); render('goal'); }); });
+      function upd() {
+        S.amount = +$('#rA').value; S.years = +$('#rY').value; S.rate = +$('#rR').value; capPortfolio();
+        $('#vA').textContent = C.aed(S.amount); $('#vY').textContent = S.years; $('#vR').textContent = S.rate + '%';
+        $('#res').innerHTML = resHtml(planLine()); var al = $('#ageLine'); if (al) al.textContent = ageLine();
+        var ps = PRESETS.filter(function (p) { return p.amount === S.amount && p.years === S.years && p.rate === S.rate; })[0];
+        if (!ps) { S.goal = 'My own goal'; $$('[data-preset]', st).forEach(function (b) { b.classList.remove('on'); }); }
+      }
+      ['#rA', '#rY', '#rR'].forEach(function (s) { $(s).addEventListener('input', upd); });
+    }
+    if (id === 'mix') { var ex = $('#ex'); if (ex) ex.addEventListener('click', function () { openDrawer(); ask('What is a model mix, and why do short goals use more sukuk?'); }); }
+    if (id === 'portfolio') {
+      var q = $('#sq');
+      function sugs() {
+        var v = q.value.trim(), list = v ? C.suggest(v) : [];
+        $('#sug').innerHTML = list.length ? '<div class="sug">' + list.map(function (s) { return '<button type="button" data-pick="' + s.t + '"><span>' + esc(s.n) + '</span><span class="num" style="color:var(--dim)">' + s.t + '</span></button>'; }).join('') + '</div>' : '';
+        $$('[data-pick]', st).forEach(function (b) { b.addEventListener('click', function () { pick(b.getAttribute('data-pick')); }); });
+      }
+      q.addEventListener('input', sugs);
+      $('#sf').addEventListener('submit', function (e) { e.preventDefault(); var v = q.value.trim(); if (!v) return; var s = C.find(v) || C.find(v.toUpperCase()); if (s) pick(s.t); else unknown(v); });
+      bindPf(st);
+    }
+    if (id === 'explore') {
+      var xq = $('#xq');
+      function show(v) { S.xq = v; S.xr = resultFor(v); $('#xres').innerHTML = S.xr; var rq = $('#reqS'); if (rq) rq.addEventListener('click', function () { $('#reqM').textContent = 'Noted. This is a prototype, so nothing was saved.'; }); }
+      xq.addEventListener('input', function () {
+        var v = xq.value.trim(), list = v ? C.suggest(v) : [];
+        $('#xsug').innerHTML = list.length ? '<div class="sug">' + list.map(function (s) { return '<button type="button" data-xp="' + s.t + '"><span>' + esc(s.n) + '</span><span class="num" style="color:var(--dim)">' + s.t + '</span></button>'; }).join('') + '</div>' : '';
+        $$('[data-xp]', st).forEach(function (b) { b.addEventListener('click', function () { var s = C.stocks.filter(function (x) { return x.t === b.getAttribute('data-xp'); })[0]; xq.value = s.n; $('#xsug').innerHTML = ''; show(s.n); }); });
+      });
+      $('#xf').addEventListener('submit', function (e) { e.preventDefault(); var v = xq.value.trim(); if (v) { $('#xsug').innerHTML = ''; show(v); } });
+      $$('[data-x]', st).forEach(function (b) { b.addEventListener('click', function () { var s = C.stocks.filter(function (x) { return x.t === b.getAttribute('data-x'); })[0]; xq.value = s.n; show(s.n); }); });
+      var rq0 = $('#reqS'); if (rq0) rq0.addEventListener('click', function () { $('#reqM').textContent = 'Noted. This is a prototype, so nothing was saved.'; });
+    }
+
+    if (id === 'review') {
+      $$('[data-edit]', st).forEach(function (x) { x.addEventListener('click', function () { goStep(x.getAttribute('data-edit')); }); });
+      $('#again').addEventListener('click', function () { $('#newj').click(); });
+      $('#askme').addEventListener('click', function () { openDrawer(); });
+    }
+
+  }
+  function bindPf(root) {
+    $$('[data-add]', root).forEach(function (b) { b.addEventListener('click', function () { addStock(b.getAttribute('data-add')); render('portfolio'); }); });
+    $$('[data-rm]', root).forEach(function (b) { b.addEventListener('click', function () { S.portfolio = S.portfolio.filter(function (p) { return p.t !== b.getAttribute('data-rm'); }); render('portfolio'); }); });
+    $$('[data-w]', root).forEach(function (r) {
+      r.addEventListener('input', function () {
+        var t = r.getAttribute('data-w'), others = S.portfolio.reduce(function (a, p) { return a + (p.t === t ? 0 : p.w); }, 0), max = stockShare() - others;
+        var v = Math.max(1, Math.min(+r.value, max)); r.value = v;
+        S.portfolio.forEach(function (p) { if (p.t === t) p.w = v; }); r.nextSibling.textContent = v + '%';
+      });
+      r.addEventListener('change', function () { render('portfolio'); });
+    });
+  }
+  function pick(t) { var s = C.stocks.filter(function (x) { return x.t === t; })[0]; S.picked = s; S.q = s.n; render('portfolio'); }
+  function unknown(v) {
+    S.picked = null; $('#sug').innerHTML = '';
+    var etf = C.findEtf(v);
+    $('#verdict').innerHTML = etf
+      ? '<div class="card" style="margin-top:14px"><h3>' + esc(etf.n) + '</h3><span class="vp u">Not screened by Safr</span><p style="margin-top:10px">Halal-labelled by its issuer. Not screened by Safr, so there is no verdict here. Check the issuer\'s factsheet and Shariah board.</p></div>'
+      : '<div class="card" style="margin-top:14px"><h3>' + esc(v) + '</h3><span class="vp u">Not screened yet</span><p style="margin-top:10px">Safr hasn\'t screened this yet. It only gives a verdict for stocks it has checked against the data, and it won\'t guess.</p><div class="row"><button class="btn s" id="reqS">Request screening</button></div><p class="note" id="reqM"></p></div>';
+    var rq = $('#reqS'); if (rq) rq.addEventListener('click', function () { $('#reqM').textContent = 'Noted. This is a prototype, so nothing was saved.'; });
+  }
+  function capPortfolio() {
+    var left = stockShare();
+    S.portfolio = S.portfolio.filter(function (p) { var w = Math.min(p.w, left); left -= w; p.w = w; return w >= 1; });
+  }
+  function addStock(t, w) {
+    var s = C.stocks.filter(function (x) { return x.t === t; })[0];
+    if (!s || !s.halal || S.portfolio.some(function (p) { return p.t === t; })) return false;
+    var left = stockShare() - usedW(); if (left <= 0) return false;
+    S.portfolio.push({ t: t, w: Math.max(1, Math.min(w || 10, left) | 0) }); return true;
+  }
+
+  /* ---------- chat ---------- */
+  var QAIDX = {}; QA.forEach(function (x) { QAIDX[x.id] = x; });
+  function add(cls, inner, extra) {
+    var d = document.createElement('div'); d.className = 'msg ' + cls + ' cw';
+    d.innerHTML = (cls === 's' ? '<span class="ring"></span>' : '') + '<div class="bub">' + inner + '</div>';
+    thread.appendChild(d);
+    if (extra && extra.chips) {
+      var c = document.createElement('div'); c.className = 'chips';
+      extra.chips.forEach(function (ch) { var b = document.createElement('button'); b.className = 'chip'; b.textContent = ch[0]; b.addEventListener('click', function () { chipAct(ch[1], ch[0]); }); c.appendChild(b); });
+      d.querySelector('.bub').appendChild(c);
+    }
+    if (extra && extra.tag) { var t = document.createElement('span'); t.className = 'tagm'; t.textContent = extra.tag; d.querySelector('.bub').appendChild(t); }
+    thread.scrollTop = thread.scrollHeight; return d;
+  }
+  function bot(text, extra) {
+    var opening = extra && extra.opening ? '<p class="chat-opening">' + esc(extra.opening) + '</p>' : '';
+    return add('s', opening + '<div class="answer-copy">' + html(text) + '</div>', extra);
+  }
+  function questionKey(q) { return String(q || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim(); }
+  function followUps(q, supplied) {
+    S.asked = S.asked || {};
+    S.asked[questionKey(q)] = true;
+    return (supplied || []).concat(STARTERS.filter(function (item) { return !S.asked[questionKey(item[0])]; }).map(function (item) { return [item[0], 'q']; })).slice(0, 3);
+  }
+  function chipAct(a, label) {
+    if (a === 'setup') { startSetup(); }
+    else if (a === 'stock') { ensureStarted(); bot('Type a stock name, for example Tesla or Dubai Islamic Bank, and I\'ll check it.'); $('#q').focus(); }
+    else if (a.indexOf('qa:') === 0) ask(QAIDX[a.slice(3)].question, QAIDX[a.slice(3)]);
+    else if (a.indexOf('add:') === 0) { var t = a.slice(4); if (addStock(t)) { bot('Added ' + t + ' to your plan. You can change its share in Build your portfolio.', { chips: [['Open my portfolio', 'open:portfolio']] }); } else bot('I could not add that. It has to be a Halal stock I have screened, with room left in the stock share.'); }
+    else if (a.indexOf('open:') === 0) { goStep(a.slice(5)); }
+    else ask(label);
+  }
+  function startSetup() { enterApp(); goStep('you'); }
+  function enterApp() { revealApp(); }
+
+  var FALLBACK = 'I couldn\'t reach the live assistant, so here\'s what I can say from the built-in answers. Try one of the built-in questions, or search a stock.';
+  var REC = /\b(what|which)\b.*\b(should i|to)\b.*\b(buy|invest in|sell)\b|\bshould i (buy|sell|invest)\b|\bbest (stock|share|etf)\b|\brecommend\b|\btell me what to (buy|invest)\b/i;
+  var RULES = [
+    [/purif/i, 'purify'], [/zakat|zakah/i, 'zakat'], [/sukuk/i, 'sukuk'], [/takaful/i, 'takaful'], [/\briba\b/i, 'riba'], [/gharar/i, 'gharar'],
+    [/crypto|bitcoin/i, 'crypto'], [/\bgold\b/i, 'gold'], [/\betfs?\b/i, 'etf'], [/loan|debt|mortgage/i, 'loan'], [/aaoifi/i, 'aaoifi'], [/fatwa/i, 'fatwa'],
+    [/licen[sc]e|regulat/i, 'safr_licensed'], [/hold (my|the) money|custod/i, 'safr_money'], [/guarantee/i, 'safr_guarantee'], [/model mix|why .*sukuk/i, 'safr_mix'],
+    [/alcohol|pork|gambl/i, 'haram_business'], [/\bbank\b/i, 'bank_stock'], [/halal investing|what is halal/i, 'halal_investing'], [/interest/i, 'interest']
+  ];
+  function localAnswer(q, storedChip) {
+    var stored = storedChip || matchQAPack(q, QA);
+    if (stored) return { text: stored.answer, tag: answerTag(stored.basis) };
+    var l = q.toLowerCase();
+    var exact = QA.filter(function (x) { return x.question.toLowerCase() === l; })[0];
+    if (exact) return { text: exact.answer, tag: answerTag(exact.basis) };
+    if (REC.test(l)) return { text: 'I can\'t tell you what to buy. I can show you a model mix for your goal, and check if a stock is halal and why.' };
+    if (/how (does|do) (this|safr|it) work/.test(l)) return { text: 'This is a journey Falahone is building to help people reach financial freedom step by step.\n1. You tell me what you\'re saving for.\n2. I work out the monthly amount, using the growth rate you choose.\n3. I show a model mix, and which stocks pass halal screening, with the reason.\n4. You decide. Safr is a guide. It never tells you what to buy.', chips: [['Help me build my journey', 'setup']] };
+    var s = C.find(l);
+    if (s) return { text: C.stockText(s), tag: 'Screened data', chips: s.halal ? [['Add ' + s.t + ' to my plan', 'add:' + s.t]] : null };
+    var e = C.findEtf(l); if (e) return { text: e.n + ' (' + e.t + ') is halal-labelled by its issuer. Safr has not screened it, so there is no verdict. Check the issuer\'s factsheet and Shariah board.' };
+    if (/[^\x00-\x7F]/.test(q)) return null;
+    if (/zakat/.test(l) && /(how much|amount|calculate|pay)/.test(l)) return { text: QAIDX.zakat.answer, tag: 'Personal' };
+    for (var i = 0; i < RULES.length; i++) if (RULES[i][0].test(l) && QAIDX[RULES[i][1]]) { var x = QAIDX[RULES[i][1]]; return { text: x.answer, tag: answerTag(x.basis) }; }
+    if (/set up|setup|build my journey|start|just arrived|where do i start/.test(l)) return { text: 'Let\'s start with what you\'re saving for. I\'ll take you step by step, starting with protection.', chips: [['Set up my financial journey', 'setup']] };
+    if (/hajj|home|deposit|family|cushion|freedom|my future/.test(l)) {
+      var pr = PRESETS.filter(function (p) { return l.indexOf(p.name.toLowerCase().split(' ')[0]) !== -1; })[0];
+      if (pr) { S.goal = pr.name; S.amount = pr.amount; S.years = pr.years; S.rate = pr.rate; capPortfolio(); return { text: 'Good goal: ' + pr.name + '. I set an example plan you can change.', chips: [['Open my goal', 'open:goal']] }; }
+    }
+    return null;
+  }
+  var busy = false, generation = 0, pending = null;
+  function ask(q, storedChip) {
+    if (!q || busy) return; ensureStarted(); S.hist.push({ role: 'user', content: q });
+    add('u', esc(q));
+    var loc = localAnswer(q, storedChip);
+    if (loc) { var opening = loc.tag === 'Screened data' ? 'Here is what the screening shows.' : 'Happy to explain.'; bot(loc.text, { opening: opening, chips: followUps(q, loc.chips), tag: loc.tag }); S.hist.push({ role: 'assistant', content: loc.text }); return; }
+    busy = true; var epoch = generation; var wait = add('s', '<span class="dots"><span></span><span></span><span></span></span>');
+    var ctl = new AbortController(); pending = ctl; var to = setTimeout(function () { ctl.abort(); }, 25000);
+    fetch('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: ctl.signal,
+      body: JSON.stringify({ message: q, history: S.hist.slice(-7, -1), state: { goal: S.goal, amount: S.amount, years: S.years, rate: S.rate, portfolio: S.portfolio } }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok && !d.answer && !d.text) throw new Error('x'); return d; }); })
+      .then(function (d) {
+        if (epoch !== generation) return; wait.remove(); var chips = [];
+        (d.actions || []).forEach(function (a) {
+          if (a.type === 'set_goal') { S.amount = a.amount; S.years = a.years; S.rate = a.rate; S.goal = a.goal || S.goal; capPortfolio(); chips.push(['Open my goal', 'open:goal']); }
+          if (a.type === 'add') { if (addStock(a.t, a.w)) chips.push(['Open my portfolio', 'open:portfolio']); }
+        });
+        bot(d.text || d.answer || FALLBACK, { chips: followUps(q, chips), tag: d.basis ? answerTag(d.basis) : (d.verified && d.verified.length) ? 'Screened data' : 'Live assistant' });
+        S.hist.push({ role: 'assistant', content: d.text || d.answer || FALLBACK });
+      })
+      .catch(function () { if (epoch !== generation) return; wait.remove(); bot(FALLBACK, { chips: followUps(q) }); })
+      .then(function () { clearTimeout(to); if (epoch === generation) { busy = false; pending = null; } });
+  }
+  $('#composer').addEventListener('submit', function (e) { e.preventDefault(); var i = $('#q'), v = i.value.trim(); if (!v) return; i.value = ''; ask(v); });
+  $('#setup').addEventListener('click', startSetup);
+
+  /* starters and more questions */
+  var STARTERS = [['How can a stock be halal?', null], ['What is takaful, and how is it halal?', null], ['How do I purify my investments?', null], ['Is Tesla halal?', null], ['Why is DEWA not halal?', null]];
+  $('#starters').innerHTML = STARTERS.map(function (s, i) { return '<button class="chip" data-s="' + i + '">' + esc(s[0]) + '</button>'; }).join('');
+  $$('[data-s]').forEach(function (b) { b.addEventListener('click', function () { var s = STARTERS[+b.getAttribute('data-s')]; if (s[1]) chipAct(s[1], s[0]); else ask(s[0]); }); });
+  var cats = {}; QA.forEach(function (x) { (cats[x.category] = cats[x.category] || []).push(x); });
+  var extra = '<div style="margin:6px 0 10px"><div class="lab" style="padding-left:0">Try in Hindi or Malayalam</div><button class="chip" data-t="क्या टेस्ला का शेयर हलाल है?">क्या टेस्ला का शेयर हलाल है?</button><button class="chip" data-t="ടെസ്‌ലയുടെ ഓഹരി ഹലാൽ ആണോ?">ടെസ്‌ലയുടെ ഓഹരി ഹലാൽ ആണോ?</button></div>' +
+    '<div style="margin:6px 0 10px"><div class="lab" style="padding-left:0">Check a stock</div>' + ['Tesla', 'NVIDIA', 'Apple', 'Dubai Islamic Bank', 'DEWA', 'Aldar'].map(function (n) { return '<button class="chip" data-t="Is ' + n + ' halal?">' + n + '</button>'; }).join('') + '</div>';
+  $('#more').innerHTML = extra + '<div><div class="lab">Earlier questions</div>' + ["Is Tesla halal?", "Is NVIDIA halal?", "Is Apple halal?", "Is Coca-Cola halal?", "Is Ford halal?", "Is AT&T halal?", "Is JPMorgan halal?", "Is Anheuser-Busch halal?", "Is Dubai Islamic Bank halal?", "Is DEWA halal?", "What is halal investing?", "What does the 30% rule mean?", "What is sukuk?"].map(function(q){return '<button class="chip" data-t="'+esc(q)+'">'+esc(q)+'</button>';}).join('')+'</div>' + ['Purification', 'Basics', 'Safr'].filter(function (c) { return cats[c]; }).map(function (c) { return '<div style="margin:6px 0 10px"><div class="lab" style="padding-left:0">' + esc(c === 'Safr' ? 'About Safr' : c) + '</div>' + cats[c].map(function (x) { return '<button class="chip" data-t="' + esc(x.question) + '">' + esc(x.question) + '</button>'; }).join('') + '</div>'; }).join('');
+  $$('#more [data-t]').forEach(function (b) { b.addEventListener('click', function () { var q = b.getAttribute('data-t'); ask(q, QA.filter(function (x) { return x.question === q; })[0]); }); });
+
+  /* initial mount */
+  mount('home'); renderSteps();
+  var m = /[?&]go=(\w+)/.exec(location.search); if (m) { endLoader(); enter(m[1] === 'app' ? null : m[1]); }
+})();
+</script>
+</body>
+</html>
